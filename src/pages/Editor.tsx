@@ -1,0 +1,271 @@
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import RichTextEditor from '@/components/RichTextEditor';
+import slugify from 'slugify';
+import { ArrowLeft, Save, Send } from 'lucide-react';
+
+const Editor = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
+  // Load existing post if editing
+  useEffect(() => {
+    if (id && user) {
+      loadPost();
+    }
+  }, [id, user]);
+
+  const loadPost = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+
+      setTitle(data.title);
+      setContent(data.content || '');
+      setExcerpt(data.excerpt || '');
+    } catch (error) {
+      console.error('Error loading post:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load post.',
+      });
+      navigate('/');
+    }
+  };
+
+  const generateSlug = (title: string) => {
+    return slugify(title, {
+      lower: true,
+      remove: /[*+~.()'"!:@]/g,
+    });
+  };
+
+  const saveDraft = async () => {
+    if (!user || !title.trim()) return;
+
+    setIsSaving(true);
+    try {
+      const slug = generateSlug(title);
+      const postData = {
+        title: title.trim(),
+        content,
+        excerpt: excerpt.trim(),
+        slug,
+        status: 'draft',
+        user_id: user.id,
+      };
+
+      if (id) {
+        // Update existing post
+        const { error } = await supabase
+          .from('posts')
+          .update(postData)
+          .eq('id', id)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Create new post
+        const { data, error } = await supabase
+          .from('posts')
+          .insert([postData])
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        // Navigate to edit the newly created post
+        navigate(`/editor/${data.id}`, { replace: true });
+      }
+
+      toast({
+        title: 'Draft saved',
+        description: 'Your post has been saved as a draft.',
+      });
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to save draft.',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const publishPost = async () => {
+    if (!user || !title.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const slug = generateSlug(title);
+      const postData = {
+        title: title.trim(),
+        content,
+        excerpt: excerpt.trim(),
+        slug,
+        status: 'published',
+        published_at: new Date().toISOString(),
+        user_id: user.id,
+      };
+
+      if (id) {
+        // Update existing post
+        const { error } = await supabase
+          .from('posts')
+          .update(postData)
+          .eq('id', id)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Create new post
+        const { error } = await supabase
+          .from('posts')
+          .insert([postData]);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: 'Post published!',
+        description: 'Your post is now live.',
+      });
+      
+      navigate('/');
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to publish post.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <h1 className="text-xl font-semibold">
+                {id ? 'Edit Post' : 'New Post'}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={saveDraft}
+                disabled={isSaving || !title.trim()}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? 'Saving...' : 'Save Draft'}
+              </Button>
+              <Button
+                onClick={publishPost}
+                disabled={isLoading || !title.trim()}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {isLoading ? 'Publishing...' : 'Publish'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Post Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter your post title..."
+                  className="text-lg"
+                />
+              </div>
+              <div>
+                <Label htmlFor="excerpt">Excerpt (optional)</Label>
+                <Textarea
+                  id="excerpt"
+                  value={excerpt}
+                  onChange={(e) => setExcerpt(e.target.value)}
+                  placeholder="A brief description of your post..."
+                  rows={3}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Content</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
+                placeholder="Start writing your post..."
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Editor;
