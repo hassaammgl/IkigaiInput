@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import RichTextEditor from '@/components/RichTextEditor';
 import AiTitleSuggestions from '@/components/AiTitleSuggestions';
+import CategoryTagSelector from '@/components/CategoryTagSelector';
 import slugify from 'slugify';
 import { ArrowLeft, Save, Send } from 'lucide-react';
 
@@ -22,6 +23,8 @@ const Editor = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [excerpt, setExcerpt] = useState('');
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -53,6 +56,8 @@ const Editor = () => {
       setTitle(data.title);
       setContent(data.content || '');
       setExcerpt(data.excerpt || '');
+      setCategory(data.category || '');
+      setTags(data.tags || []);
     } catch (error) {
       console.error('Error loading post:', error);
       toast({
@@ -71,17 +76,28 @@ const Editor = () => {
     });
   };
 
+  const calculateReadTime = (content: string) => {
+    const wordsPerMinute = 200;
+    const wordCount = content.split(/\s+/).length;
+    return Math.ceil(wordCount / wordsPerMinute);
+  };
+
   const saveDraft = async () => {
     if (!user || !title.trim()) return;
 
     setIsSaving(true);
     try {
       const slug = generateSlug(title);
+      const readTime = calculateReadTime(content);
       const postData = {
         title: title.trim(),
         content,
         excerpt: excerpt.trim(),
         slug,
+        category: category || null,
+        tags: tags.length > 0 ? tags : null,
+        author_name: user.email,
+        read_time: readTime,
         status: 'draft',
         user_id: user.id,
       };
@@ -131,11 +147,16 @@ const Editor = () => {
     setIsLoading(true);
     try {
       const slug = generateSlug(title);
+      const readTime = calculateReadTime(content);
       const postData = {
         title: title.trim(),
         content,
         excerpt: excerpt.trim(),
         slug,
+        category: category || null,
+        tags: tags.length > 0 ? tags : null,
+        author_name: user.email,
+        read_time: readTime,
         status: 'published',
         published_at: new Date().toISOString(),
         user_id: user.id,
@@ -249,6 +270,12 @@ const Editor = () => {
                       rows={3}
                     />
                   </div>
+                  <CategoryTagSelector
+                    selectedCategory={category}
+                    selectedTags={tags}
+                    onCategoryChange={setCategory}
+                    onTagsChange={setTags}
+                  />
                 </CardContent>
               </Card>
 

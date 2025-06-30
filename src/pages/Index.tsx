@@ -7,13 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
-import { PenTool, Calendar, Edit } from 'lucide-react';
+import { PenTool, Calendar, Edit, Eye, MessageSquare } from 'lucide-react';
 
 interface Post {
   id: string;
   title: string;
   excerpt: string | null;
   status: string;
+  category: string | null;
+  tags: string[] | null;
+  author_name: string | null;
+  read_time: number | null;
+  likes_count: number;
+  comments_count: number;
   created_at: string;
   published_at: string | null;
 }
@@ -35,7 +41,7 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select('id, title, excerpt, status, created_at, published_at')
+        .select('*')
         .eq('status', 'published')
         .order('published_at', { ascending: false })
         .limit(10);
@@ -55,7 +61,7 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .select('id, title, excerpt, status, created_at, published_at')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -109,7 +115,7 @@ const Index = () => {
                   <Card key={post.id}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <div>
+                        <div className="flex-1">
                           <CardTitle className="mb-2">{post.title}</CardTitle>
                           <CardDescription>
                             {post.excerpt || 'No excerpt available'}
@@ -126,6 +132,18 @@ const Index = () => {
                           </Button>
                         </div>
                       </div>
+                      {(post.category || (post.tags && post.tags.length > 0)) && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {post.category && (
+                            <Badge variant="outline">{post.category}</Badge>
+                          )}
+                          {post.tags?.slice(0, 3).map(tag => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center text-sm text-muted-foreground">
@@ -133,6 +151,12 @@ const Index = () => {
                         {post.status === 'published' && post.published_at
                           ? `Published ${formatDate(post.published_at)}`
                           : `Created ${formatDate(post.created_at)}`}
+                        {post.read_time && (
+                          <>
+                            <span className="mx-2">•</span>
+                            {post.read_time} min read
+                          </>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -157,15 +181,58 @@ const Index = () => {
                 {posts.map((post) => (
                   <Card key={post.id}>
                     <CardHeader>
-                      <CardTitle>{post.title}</CardTitle>
-                      <CardDescription>
-                        {post.excerpt || 'No excerpt available'}
-                      </CardDescription>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle>{post.title}</CardTitle>
+                          <CardDescription>
+                            {post.excerpt || 'No excerpt available'}
+                          </CardDescription>
+                          {post.author_name && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              by {post.author_name}
+                            </p>
+                          )}
+                        </div>
+                        {post.category && (
+                          <Badge variant="outline">{post.category}</Badge>
+                        )}
+                      </div>
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {post.tags.slice(0, 4).map(tag => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {post.tags.length > 4 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{post.tags.length - 4}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Published {formatDate(post.published_at || post.created_at)}
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {formatDate(post.published_at || post.created_at)}
+                          </div>
+                          {post.read_time && (
+                            <span>{post.read_time} min read</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            {post.likes_count}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MessageSquare className="w-4 h-4" />
+                            {post.comments_count}
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

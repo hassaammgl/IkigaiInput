@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Editor from "./pages/Editor";
 import Dashboard from "./pages/Dashboard";
+import AuthorProfile from "./pages/AuthorProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/editor" element={<Editor />} />
               <Route path="/editor/:id" element={<Editor />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/authors/:username" element={<AuthorProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
