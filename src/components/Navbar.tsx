@@ -3,7 +3,8 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { PenTool, LogOut, User } from 'lucide-react';
+import { PenTool, LogOut, User, BarChart3 } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -23,8 +24,15 @@ const Navbar = () => {
           </Link>
           
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             {user ? (
               <>
+                <Button asChild variant="ghost">
+                  <Link to="/dashboard">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Link>
+                </Button>
                 <Button asChild variant="ghost">
                   <Link to="/editor">
                     <PenTool className="w-4 h-4 mr-2" />

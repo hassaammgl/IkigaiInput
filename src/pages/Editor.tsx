@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import RichTextEditor from '@/components/RichTextEditor';
+import AiTitleSuggestions from '@/components/AiTitleSuggestions';
 import slugify from 'slugify';
 import { ArrowLeft, Save, Send } from 'lucide-react';
 
@@ -221,47 +221,58 @@ const Editor = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Post Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter your post title..."
-                  className="text-lg"
-                />
-              </div>
-              <div>
-                <Label htmlFor="excerpt">Excerpt (optional)</Label>
-                <Textarea
-                  id="excerpt"
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder="A brief description of your post..."
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Post Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter your post title..."
+                      className="text-lg"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="excerpt">Excerpt (optional)</Label>
+                    <Textarea
+                      id="excerpt"
+                      value={excerpt}
+                      onChange={(e) => setExcerpt(e.target.value)}
+                      placeholder="A brief description of your post..."
+                      rows={3}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Content</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RichTextEditor
+              <Card>
+                <CardHeader>
+                  <CardTitle>Content</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RichTextEditor
+                    content={content}
+                    onChange={setContent}
+                    placeholder="Start writing your post..."
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <AiTitleSuggestions
                 content={content}
-                onChange={setContent}
-                placeholder="Start writing your post..."
+                onSelectTitle={setTitle}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
