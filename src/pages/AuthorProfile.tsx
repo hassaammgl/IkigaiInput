@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Calendar, Eye, MessageSquare, ExternalLink } from 'lucide-react';
+import type { Json } from '@/integrations/supabase/types';
 
 interface AuthorProfile {
   id: string;
@@ -14,7 +15,7 @@ interface AuthorProfile {
   bio: string;
   photo_url: string;
   role: string;
-  social_links: Record<string, string>;
+  social_links: Json;
   created_at: string;
 }
 
@@ -80,6 +81,20 @@ const AuthorProfile = () => {
     });
   };
 
+  // Helper function to safely parse social links
+  const getSocialLinks = (socialLinks: Json): Record<string, string> => {
+    if (socialLinks && typeof socialLinks === 'object' && !Array.isArray(socialLinks)) {
+      const links: Record<string, string> = {};
+      Object.entries(socialLinks).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          links[key] = value;
+        }
+      });
+      return links;
+    }
+    return {};
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -105,6 +120,8 @@ const AuthorProfile = () => {
       </div>
     );
   }
+
+  const socialLinks = getSocialLinks(profile.social_links);
 
   return (
     <div className="min-h-screen bg-background">
@@ -141,9 +158,9 @@ const AuthorProfile = () => {
                     <div>{posts.length} posts published</div>
                   </div>
                   
-                  {profile.social_links && Object.keys(profile.social_links).length > 0 && (
+                  {Object.keys(socialLinks).length > 0 && (
                     <div className="flex gap-2 mt-4">
-                      {Object.entries(profile.social_links).map(([platform, url]) => (
+                      {Object.entries(socialLinks).map(([platform, url]) => (
                         <a
                           key={platform}
                           href={url}
