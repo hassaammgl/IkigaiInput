@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,7 +55,7 @@ const CourseDetail = () => {
   const loadCourse = async () => {
     try {
       const { data: courseData, error: courseError } = await supabase
-        .from('courses' as any)
+        .from('courses')
         .select('*')
         .eq('id', id)
         .single();
@@ -85,7 +84,7 @@ const CourseDetail = () => {
       // Check if user is enrolled
       if (user) {
         const { data: enrollmentData } = await supabase
-          .from('course_enrollments' as any)
+          .from('course_enrollments')
           .select('id')
           .eq('course_id', id)
           .eq('user_id', user.id)
@@ -112,7 +111,7 @@ const CourseDetail = () => {
 
     try {
       const { error } = await supabase
-        .from('course_enrollments' as any)
+        .from('course_enrollments')
         .insert({
           course_id: course!.id,
           user_id: user.id,
@@ -122,7 +121,7 @@ const CourseDetail = () => {
 
       // Update students count
       await supabase
-        .from('courses' as any)
+        .from('courses')
         .update({ students_count: course!.students_count + 1 })
         .eq('id', course!.id);
 

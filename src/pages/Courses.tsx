@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +39,7 @@ const Courses = () => {
   const loadCourses = async () => {
     try {
       const { data, error } = await supabase
-        .from('courses' as any)
+        .from('courses')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -55,13 +54,13 @@ const Courses = () => {
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          course.instructor_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = Array.from(new Set(courses.map(course => course.category)));
+  const categories = Array.from(new Set(courses.map(course => course.category).filter(Boolean)));
 
   if (loading) {
     return (

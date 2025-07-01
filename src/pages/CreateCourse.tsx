@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -18,69 +18,60 @@ const CreateCourse = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     instructor_name: '',
     price: 0,
     duration: '',
-    level: '',
+    level: 'Beginner',
     category: '',
     image_url: '',
     content: '',
   });
+  
   const [learningObjectives, setLearningObjectives] = useState<string[]>(['']);
   const [requirements, setRequirements] = useState<string[]>(['']);
+  const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : value
-    }));
-  };
-
-  const handleSelectChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleImageUpload = (url: string) => {
-    setFormData(prev => ({
-      ...prev,
-      image_url: url
-    }));
-  };
-
   const addLearningObjective = () => {
-    setLearningObjectives(prev => [...prev, '']);
-  };
-
-  const removeLearningObjective = (index: number) => {
-    setLearningObjectives(prev => prev.filter((_, i) => i !== index));
+    setLearningObjectives([...learningObjectives, '']);
   };
 
   const updateLearningObjective = (index: number, value: string) => {
-    setLearningObjectives(prev => 
-      prev.map((obj, i) => i === index ? value : obj)
-    );
+    const updated = [...learningObjectives];
+    updated[index] = value;
+    setLearningObjectives(updated);
+  };
+
+  const removeLearningObjective = (index: number) => {
+    if (learningObjectives.length > 1) {
+      setLearningObjectives(learningObjectives.filter((_, i) => i !== index));
+    }
   };
 
   const addRequirement = () => {
-    setRequirements(prev => [...prev, '']);
-  };
-
-  const removeRequirement = (index: number) => {
-    setRequirements(prev => prev.filter((_, i) => i !== index));
+    setRequirements([...requirements, '']);
   };
 
   const updateRequirement = (index: number, value: string) => {
-    setRequirements(prev => 
-      prev.map((req, i) => i === index ? value : req)
-    );
+    const updated = [...requirements];
+    updated[index] = value;
+    setRequirements(updated);
+  };
+
+  const removeRequirement = (index: number) => {
+    if (requirements.length > 1) {
+      setRequirements(requirements.filter((_, i) => i !== index));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,28 +86,16 @@ const CreateCourse = () => {
       return;
     }
 
-    if (!formData.title || !formData.description || !formData.instructor_name) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing required fields',
-        description: 'Please fill in all required fields.',
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const filteredObjectives = learningObjectives.filter(obj => obj.trim() !== '');
-      const filteredRequirements = requirements.filter(req => req.trim() !== '');
-
       const { data, error } = await supabase
-        .from('courses' as any)
+        .from('courses')
         .insert({
           ...formData,
           user_id: user.id,
-          learning_objectives: filteredObjectives,
-          requirements: filteredRequirements,
+          learning_objectives: learningObjectives.filter(obj => obj.trim() !== ''),
+          requirements: requirements.filter(req => req.trim() !== ''),
         })
         .select()
         .single();
@@ -125,7 +104,7 @@ const CreateCourse = () => {
 
       toast({
         title: 'Course created successfully!',
-        description: 'Your course has been created and is now available.',
+        description: 'Your course has been published.',
       });
 
       navigate(`/courses/${data.id}`);
@@ -134,7 +113,7 @@ const CreateCourse = () => {
       toast({
         variant: 'destructive',
         title: 'Failed to create course',
-        description: 'Please try again later.',
+        description: 'Please try again.',
       });
     } finally {
       setLoading(false);
@@ -146,14 +125,10 @@ const CreateCourse = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
-          <Card>
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
-              <p className="text-muted-foreground">
-                Please sign in to create a course.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+            <p className="text-muted-foreground">Please sign in to create a course.</p>
+          </div>
         </div>
       </div>
     );
@@ -182,81 +157,74 @@ const CreateCourse = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="title">Course Title *</Label>
+                    <Label htmlFor="title">Course Title</Label>
                     <Input
                       id="title"
-                      name="title"
                       value={formData.title}
-                      onChange={handleInputChange}
-                      placeholder="Enter course title"
+                      onChange={(e) => handleInputChange('title', e.target.value)}
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="instructor_name">Instructor Name *</Label>
+                    <Label htmlFor="instructor_name">Instructor Name</Label>
                     <Input
                       id="instructor_name"
-                      name="instructor_name"
                       value={formData.instructor_name}
-                      onChange={handleInputChange}
-                      placeholder="Enter instructor name"
+                      onChange={(e) => handleInputChange('instructor_name', e.target.value)}
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    name="description"
                     value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Enter course description"
-                    rows={4}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows={3}
                     required
                   />
                 </div>
 
                 {/* Course Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="price">Price ($)</Label>
                     <Input
                       id="price"
-                      name="price"
                       type="number"
-                      step="0.01"
                       min="0"
+                      step="0.01"
                       value={formData.price}
-                      onChange={handleInputChange}
-                      placeholder="0.00"
+                      onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
+                      required
                     />
                   </div>
                   <div>
                     <Label htmlFor="duration">Duration</Label>
                     <Input
                       id="duration"
-                      name="duration"
                       value={formData.duration}
-                      onChange={handleInputChange}
-                      placeholder="e.g., 4 weeks, 2 hours"
+                      onChange={(e) => handleInputChange('duration', e.target.value)}
+                      placeholder="e.g., 4 weeks, 20 hours"
+                      required
                     />
                   </div>
                   <div>
                     <Label htmlFor="level">Level</Label>
-                    <Select value={formData.level} onValueChange={(value) => handleSelectChange('level', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Beginner">Beginner</SelectItem>
-                        <SelectItem value="Intermediate">Intermediate</SelectItem>
-                        <SelectItem value="Advanced">Advanced</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <select
+                      id="level"
+                      value={formData.level}
+                      onChange={(e) => handleInputChange('level', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
                   </div>
                 </div>
 
@@ -264,29 +232,29 @@ const CreateCourse = () => {
                   <Label htmlFor="category">Category</Label>
                   <Input
                     id="category"
-                    name="category"
                     value={formData.category}
-                    onChange={handleInputChange}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
                     placeholder="e.g., Programming, Design, Business"
+                    required
                   />
                 </div>
 
-                {/* Image Upload */}
+                {/* Course Image */}
                 <div>
                   <Label>Course Image</Label>
                   <ImageUpload
-                    onImageUploaded={handleImageUpload}
-                    currentImage={formData.image_url}
                     bucket="course-images"
+                    onUpload={(url) => handleInputChange('image_url', url)}
+                    currentImage={formData.image_url}
                   />
                 </div>
 
                 {/* Learning Objectives */}
                 <div>
                   <Label>Learning Objectives</Label>
-                  <div className="space-y-2">
+                  <div className="space-y-2 mt-2">
                     {learningObjectives.map((objective, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                      <div key={index} className="flex gap-2">
                         <Input
                           value={objective}
                           onChange={(e) => updateLearningObjective(index, e.target.value)}
@@ -311,7 +279,7 @@ const CreateCourse = () => {
                       onClick={addLearningObjective}
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Learning Objective
+                      Add Objective
                     </Button>
                   </div>
                 </div>
@@ -319,13 +287,13 @@ const CreateCourse = () => {
                 {/* Requirements */}
                 <div>
                   <Label>Requirements</Label>
-                  <div className="space-y-2">
+                  <div className="space-y-2 mt-2">
                     {requirements.map((requirement, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                      <div key={index} className="flex gap-2">
                         <Input
                           value={requirement}
                           onChange={(e) => updateRequirement(index, e.target.value)}
-                          placeholder="What do students need to know?"
+                          placeholder="What do students need to know beforehand?"
                         />
                         {requirements.length > 1 && (
                           <Button
@@ -356,11 +324,10 @@ const CreateCourse = () => {
                   <Label htmlFor="content">Course Content</Label>
                   <Textarea
                     id="content"
-                    name="content"
                     value={formData.content}
-                    onChange={handleInputChange}
-                    placeholder="Enter the main course content, curriculum, or outline"
-                    rows={8}
+                    onChange={(e) => handleInputChange('content', e.target.value)}
+                    rows={10}
+                    placeholder="Detailed course content, curriculum, modules, etc."
                   />
                 </div>
 
