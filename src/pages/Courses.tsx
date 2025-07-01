@@ -40,7 +40,7 @@ const Courses = () => {
   const loadCourses = async () => {
     try {
       const { data, error } = await supabase
-        .from('courses')
+        .from('courses' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
