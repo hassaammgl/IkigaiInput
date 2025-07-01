@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,9 @@ import Dashboard from "./pages/Dashboard";
 import AuthorProfile from "./pages/AuthorProfile";
 import NotFound from "./pages/NotFound";
 import BlogPost from '@/pages/BlogPost';
+import Courses from '@/pages/Courses';
+import CourseDetail from '@/pages/CourseDetail';
+import CreateCourse from '@/pages/CreateCourse';
 
 const queryClient = new QueryClient();
 
@@ -32,6 +36,9 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile/:username" element={<AuthorProfile />} />
                 <Route path="/post/:slug" element={<BlogPost />} />
+                <Route path="/courses" element={<Courses />} />
+                <Route path="/courses/:id" element={<CourseDetail />} />
+                <Route path="/courses/create" element={<CreateCourse />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

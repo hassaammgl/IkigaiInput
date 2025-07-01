@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import RichTextEditor from '@/components/RichTextEditor';
 import AiTitleSuggestions from '@/components/AiTitleSuggestions';
 import CategoryTagSelector from '@/components/CategoryTagSelector';
+import ImageUpload from '@/components/ImageUpload';
 import slugify from 'slugify';
 import { ArrowLeft, Save, Send } from 'lucide-react';
 
@@ -25,6 +26,7 @@ const Editor = () => {
   const [excerpt, setExcerpt] = useState('');
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [coverImageUrl, setCoverImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -100,6 +102,7 @@ const Editor = () => {
         read_time: readTime,
         status: 'draft',
         user_id: user.id,
+        cover_image_url: coverImageUrl || null,
       };
 
       if (id) {
@@ -160,6 +163,7 @@ const Editor = () => {
         status: 'published',
         published_at: new Date().toISOString(),
         user_id: user.id,
+        cover_image_url: coverImageUrl || null,
       };
 
       if (id) {
@@ -275,6 +279,19 @@ const Editor = () => {
                     selectedTags={tags}
                     onCategoryChange={setCategory}
                     onTagsChange={setTags}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cover Image</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ImageUpload
+                    onImageUploaded={setCoverImageUrl}
+                    currentImage={coverImageUrl}
+                    bucket="post-images"
                   />
                 </CardContent>
               </Card>
