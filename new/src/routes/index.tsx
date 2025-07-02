@@ -4,7 +4,7 @@ import NotFound from "@/pages/NotFound";
 
 const routes = [
 	{
-		path: "/login",
+		path: "/auth",
 		element: <LoginPage />,
 	},
 	{

@@ -1,18 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/store/auth';
+import { useToast } from '@/hooks/useToast';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
-  const { toast } = useToast();
+  const { success,error:err } = useToast();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -33,16 +33,10 @@ const Auth = () => {
     const { error } = await signIn(email, password);
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error signing in',
-        description: error.message,
-      });
+      err(error.message)
     } else {
-      toast({
-        title: 'Welcome back!',
-        description: 'You have been signed in successfully.',
-      });
+      success("You have been signed in successfully.")
+      navigate("/")
     }
 
     setIsLoading(false);
@@ -60,16 +54,9 @@ const Auth = () => {
     const { error } = await signUp(email, password, fullName);
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error signing up',
-        description: error.message,
-      });
+       err(error.message)
     } else {
-      toast({
-        title: 'Account created!',
-        description: 'Please check your email to verify your account.',
-      });
+      success("Please check your email to verify your account.")
     }
 
     setIsLoading(false);

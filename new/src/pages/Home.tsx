@@ -1,14 +1,19 @@
-
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import Navbar from '@/components/Navbar';
-import TrendingPosts from '@/components/TrendingPosts';
-import { PenTool, Calendar, Edit, Eye, MessageSquare } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { NavLink as Link } from "react-router";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/store/auth";
+import { supabase } from "@/supabase/supabase";
+import Navbar from "@/layout/Navbar";
+// import TrendingPosts from "@/components/TrendingPosts";
+import { PenTool, Calendar, Edit, Eye, MessageSquare } from "lucide-react";
 
 interface Post {
   id: string;
@@ -41,16 +46,22 @@ const Home = () => {
   const loadPosts = async () => {
     try {
       const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false })
+        .from("posts")
+        .select("*")
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
         .limit(6);
 
       if (error) throw error;
-      setPosts(data || []);
+      setPosts(
+        (data || []).map((post) => ({
+          ...post,
+          likes_count: post.likes_count ?? 0,
+          comments_count: post.comments_count ?? 0,
+        }))
+      );
     } catch (error) {
-      console.error('Error loading posts:', error);
+      console.error("Error loading posts:", error);
     } finally {
       setLoading(false);
     }
@@ -61,31 +72,37 @@ const Home = () => {
 
     try {
       const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .from("posts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
         .limit(3);
 
       if (error) throw error;
-      setUserPosts(data || []);
+      setUserPosts(
+        (data || []).map((post) => ({
+          ...post,
+          likes_count: post.likes_count ?? 0,
+          comments_count: post.comments_count ?? 0,
+        }))
+      );
     } catch (error) {
-      console.error('Error loading user posts:', error);
+      console.error("Error loading user posts:", error);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
@@ -114,20 +131,30 @@ const Home = () => {
               {/* User Posts Section */}
               {user && userPosts.length > 0 && (
                 <div>
-                  <h2 className="text-2xl font-semibold mb-6">Your Recent Posts</h2>
+                  <h2 className="text-2xl font-semibold mb-6">
+                    Your Recent Posts
+                  </h2>
                   <div className="grid gap-6">
                     {userPosts.map((post) => (
                       <Card key={post.id}>
                         <CardHeader>
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <CardTitle className="mb-2">{post.title}</CardTitle>
+                              <CardTitle className="mb-2">
+                                {post.title}
+                              </CardTitle>
                               <CardDescription>
-                                {post.excerpt || 'No excerpt available'}
+                                {post.excerpt || "No excerpt available"}
                               </CardDescription>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
+                              <Badge
+                                variant={
+                                  post.status === "published"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
                                 {post.status}
                               </Badge>
                               <Button asChild variant="ghost" size="sm">
@@ -137,13 +164,18 @@ const Home = () => {
                               </Button>
                             </div>
                           </div>
-                          {(post.category || (post.tags && post.tags.length > 0)) && (
+                          {(post.category ||
+                            (post.tags && post.tags.length > 0)) && (
                             <div className="flex flex-wrap gap-2 mt-2">
                               {post.category && (
                                 <Badge variant="outline">{post.category}</Badge>
                               )}
-                              {post.tags?.slice(0, 3).map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
+                              {post.tags?.slice(0, 3).map((tag) => (
+                                <Badge
+                                  key={tag}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
                                   {tag}
                                 </Badge>
                               ))}
@@ -153,7 +185,7 @@ const Home = () => {
                         <CardContent>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Calendar className="w-4 h-4 mr-2" />
-                            {post.status === 'published' && post.published_at
+                            {post.status === "published" && post.published_at
                               ? `Published ${formatDate(post.published_at)}`
                               : `Created ${formatDate(post.created_at)}`}
                             {post.read_time && (
@@ -179,7 +211,9 @@ const Home = () => {
                   </div>
                 ) : posts.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No posts yet. Be the first to write one!</p>
+                    <p className="text-muted-foreground">
+                      No posts yet. Be the first to write one!
+                    </p>
                   </div>
                 ) : (
                   <div className="grid gap-6">
@@ -190,7 +224,7 @@ const Home = () => {
                             <div className="flex-1">
                               <CardTitle>{post.title}</CardTitle>
                               <CardDescription>
-                                {post.excerpt || 'No excerpt available'}
+                                {post.excerpt || "No excerpt available"}
                               </CardDescription>
                               {post.author_name && (
                                 <p className="text-sm text-muted-foreground mt-1">
@@ -204,8 +238,12 @@ const Home = () => {
                           </div>
                           {post.tags && post.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {post.tags.slice(0, 4).map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
+                              {post.tags.slice(0, 4).map((tag) => (
+                                <Badge
+                                  key={tag}
+                                  variant="secondary"
+                                  className="text-xs"
+                                >
                                   {tag}
                                 </Badge>
                               ))}
@@ -222,7 +260,9 @@ const Home = () => {
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4" />
-                                {formatDate(post.published_at || post.created_at)}
+                                {formatDate(
+                                  post.published_at || post.created_at
+                                )}
                               </div>
                               {post.read_time && (
                                 <span>{post.read_time} min read</span>
@@ -249,7 +289,7 @@ const Home = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <TrendingPosts timeRange="week" limit={5} />
+              {/* <TrendingPosts timeRange="week" limit={5} /> */}
             </div>
           </div>
         </div>

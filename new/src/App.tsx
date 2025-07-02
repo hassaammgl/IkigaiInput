@@ -7,7 +7,10 @@ const router = createBrowserRouter(routes);
 
 const App = () => {
   return (
-    <div>App</div>
+   <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+			<RouterProvider router={router} />
+			<Toaster position="top-center" closeButton richColors />
+		</ThemeProvider>
   )
 }
 
