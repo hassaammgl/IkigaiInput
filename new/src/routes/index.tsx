@@ -1,5 +1,6 @@
 import LoginPage from "@/pages/Auth";
 import Home from "@/pages/Home";
+import Editor from "@/pages/Editor";
 import NotFound from "@/pages/NotFound";
 
 const routes = [
@@ -11,6 +12,12 @@ const routes = [
 		path: "/",
 		element: (
 				<Home />
+		),
+	},
+	{
+		path: "/editor",
+		element: (
+				<Editor />
 		),
 	},
 	{

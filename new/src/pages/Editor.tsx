@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import RichTextEditor from '@/components/RichTextEditor';
-import AiTitleSuggestions from '@/components/AiTitleSuggestions';
-import CategoryTagSelector from '@/components/CategoryTagSelector';
-import ImageUpload from '@/components/ImageUpload';
+import { useAuth } from '@/store/auth';
+import { useToast } from '@/hooks/useToast';
+import { supabase } from '@/supabase/supabase';
+import RichTextEditor from '@/components/shared/RichTextEditor';
+import AiTitleSuggestions from '@/components/shared/AiTitleSuggestions';
+import CategoryTagSelector from '@/components/shared/CategoryTagSelector';
+import ImageUpload from '@/components/shared/ImageUpload';
 import slugify from 'slugify';
 import { ArrowLeft, Save, Send } from 'lucide-react';
 
@@ -19,7 +19,7 @@ const Editor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { success,error:err } = useToast();
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -62,11 +62,7 @@ const Editor = () => {
       setTags(data.tags || []);
     } catch (error) {
       console.error('Error loading post:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load post.',
-      });
+      err('Failed to load post.');
       navigate('/');
     }
   };
@@ -128,17 +124,10 @@ const Editor = () => {
         navigate(`/editor/${data.id}`, { replace: true });
       }
 
-      toast({
-        title: 'Draft saved',
-        description: 'Your post has been saved as a draft.',
-      });
+      success('Your post has been saved as a draft.');
     } catch (error) {
       console.error('Error saving draft:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to save draft.',
-      });
+      success('Failed to save draft.');
     } finally {
       setIsSaving(false);
     }
@@ -184,19 +173,12 @@ const Editor = () => {
         if (error) throw error;
       }
 
-      toast({
-        title: 'Post published!',
-        description: 'Your post is now live.',
-      });
+     success('Your post is now live.');
       
       navigate('/');
     } catch (error) {
       console.error('Error publishing post:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to publish post.',
-      });
+      err('Failed to publish post.');
     } finally {
       setIsLoading(false);
     }

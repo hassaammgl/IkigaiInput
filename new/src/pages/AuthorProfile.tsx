@@ -1,13 +1,12 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { supabase } from '@/integrations/supabase/client';
-import Navbar from '@/components/Navbar';
+import { supabase } from '@/supabase/supabase';
+import Navbar from '@/layout/Navbar';
 import { Calendar, Eye, MessageSquare, ExternalLink } from 'lucide-react';
-import type { Json } from '@/integrations/supabase/types';
+import type { Json } from '@/supabase/types';
 
 interface AuthorProfile {
   id: string;
@@ -53,7 +52,15 @@ const AuthorProfile = () => {
 
       if (profileError) throw profileError;
 
-      setProfile(profileData);
+      setProfile({
+        id: profileData.id,
+        display_name: profileData.display_name ?? '',
+        bio: profileData.bio ?? '',
+        photo_url: profileData.photo_url ?? '',
+        role: profileData.role ?? '',
+        social_links: profileData.social_links,
+        created_at: profileData.created_at,
+      });
 
       // Load posts by this author
       const { data: postsData, error: postsError } = await supabase
@@ -65,7 +72,18 @@ const AuthorProfile = () => {
 
       if (postsError) throw postsError;
 
-      setPosts(postsData || []);
+      setPosts(
+        (postsData || []).map((post: any) => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.excerpt ?? '',
+          category: post.category ?? '',
+          tags: post.tags ?? [],
+          published_at: post.published_at ?? '',
+          likes_count: post.likes_count ?? 0,
+          comments_count: post.comments_count ?? 0,
+        }))
+      );
     } catch (error) {
       console.error('Error loading author profile:', error);
     } finally {
