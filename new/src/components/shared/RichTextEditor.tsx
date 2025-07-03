@@ -7,9 +7,9 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/supabase/supabase';
+import { useAuth } from '@/store/auth';
+import { useToast } from '@/hooks/useToast';
 import {
   Bold,
   Italic,
@@ -34,7 +34,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = 'Start writing your post...',
 }) => {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { error:err } = useToast();
 
   const editor = useEditor({
     extensions: [
@@ -85,14 +85,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       return data.publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: 'Failed to upload image. Please try again.',
-      });
+      err('Failed to upload image. Please try again.');
       return null;
     }
-  }, [user, toast]);
+  }, [user, err]);
 
   const handleImageUpload = useCallback(() => {
     const input = document.createElement('input');
@@ -123,7 +119,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className="border rounded-lg overflow-hidden">
-      <div className="border-b bg-gray-50 p-2 flex flex-wrap gap-1">
+      <div className="border-b dark:bg-gray-950 bg-gray-50 p-2 flex flex-wrap gap-1">
         <Button
           variant="ghost"
           size="sm"

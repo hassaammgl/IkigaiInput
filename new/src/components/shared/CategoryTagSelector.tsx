@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/supabase/supabase';
 import { X, Plus } from 'lucide-react';
 
 interface Category {
@@ -48,8 +48,20 @@ const CategoryTagSelector: React.FC<CategoryTagSelectorProps> = ({
         supabase.from('tags').select('*').order('name')
       ]);
 
-      if (categoriesResult.data) setCategories(categoriesResult.data);
-      if (tagsResult.data) setTags(tagsResult.data);
+      if (categoriesResult.data) setCategories(
+        categoriesResult.data.map(category => ({
+          id: category.id,
+          name: category.name,
+          description: category.description ?? ''
+        }))
+      );
+      if (tagsResult.data) setTags(
+        tagsResult.data.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          description: tag.description ?? ''
+        }))
+      );
     } catch (error) {
       console.error('Error loading categories and tags:', error);
     }
@@ -77,8 +89,13 @@ const CategoryTagSelector: React.FC<CategoryTagSelectorProps> = ({
 
       if (error) throw error;
 
-      setTags([...tags, data]);
-      addTag(data.name);
+      const newTagObj: Tag = {
+        id: data.id,
+        name: data.name,
+        description: data.description ?? ''
+      };
+      setTags([...tags, newTagObj]);
+      addTag(newTagObj.name);
       setNewTag('');
     } catch (error) {
       console.error('Error creating tag:', error);

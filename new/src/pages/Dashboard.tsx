@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import Navbar from '@/components/Navbar';
-import PostAnalytics from '@/components/PostAnalytics';
-import TrendingPosts from '@/components/TrendingPosts';
+import { useAuth } from '@/store/auth';
+import { supabase } from '@/supabase/supabase';
+import Navbar from '@/layout/Navbar';
+import PostAnalytics from '@/components/shared/PostAnalytics';
+import TrendingPosts from '@/components/shared/TrendingPosts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

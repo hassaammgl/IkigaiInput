@@ -9,7 +9,6 @@ import { useAuth } from '@/store/auth';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/supabase/supabase';
 import RichTextEditor from '@/components/shared/RichTextEditor';
-import AiTitleSuggestions from '@/components/shared/AiTitleSuggestions';
 import CategoryTagSelector from '@/components/shared/CategoryTagSelector';
 import ImageUpload from '@/components/shared/ImageUpload';
 import slugify from 'slugify';
@@ -290,13 +289,6 @@ const Editor = () => {
                   />
                 </CardContent>
               </Card>
-            </div>
-
-            <div className="space-y-6">
-              <AiTitleSuggestions
-                content={content}
-                onSelectTitle={setTitle}
-              />
             </div>
           </div>
         </div>
