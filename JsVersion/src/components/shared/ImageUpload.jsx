@@ -8,15 +8,7 @@ import { useAuth } from "@/store/auth";
 import { useToast } from "@/hooks/useToast";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 
-interface ImageUploadProps {
-  onImageUploaded: (url: string) => void;
-  currentImage?: string;
-  bucket?: string;
-  accept?: string;
-  maxSize?: number; // in MB
-}
-
-const ImageUpload: React.FC<ImageUploadProps> = ({
+const ImageUpload = ({
   onImageUploaded,
   currentImage,
   bucket = "post-images",
@@ -29,7 +21,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [dragOver, setDragOver] = useState(false);
 
   const uploadImage = useCallback(
-    async (file: File) => {
+    async (file) => {
       if (!user) {
         err("Please sign in to upload images.");
         return;
@@ -66,14 +58,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     [user, success, err, onImageUploaded, bucket, maxSize]
   );
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       uploadImage(file);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
@@ -82,7 +74,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e) => {
     e.preventDefault();
     setDragOver(true);
   };

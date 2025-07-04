@@ -23,7 +23,7 @@ const Editor = () => {
     ...dummyData,
   });
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field, value) => {
     setPostData((prev) => ({ ...prev, [field]: value }));
   };
 
