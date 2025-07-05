@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/supabase/supabase';
@@ -49,7 +49,6 @@ const TrendingPosts = ({
 
       if (error) throw error;
 
-      // Calculate trend score based on engagement and ensure no nulls for required fields
       const trendingPosts = data?.map(post => ({
         ...post,
         excerpt: post.excerpt ?? '',
@@ -87,11 +86,13 @@ const TrendingPosts = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+        <div className="flex items-center flex-col justify-between">
+          <CardTitle className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5" />
             Trending Posts
           </CardTitle>
+          <CardDescription >
+
           <div className="flex gap-1">
             {timeRangeOptions.map(option => (
               <Button
@@ -104,6 +105,7 @@ const TrendingPosts = ({
               </Button>
             ))}
           </div>
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent>

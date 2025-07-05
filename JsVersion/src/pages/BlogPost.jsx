@@ -39,11 +39,13 @@ const BlogPost = () => {
   const loadPost = async () => {
     try {
       const { data: postData, error: postError } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .single();
+  .from('posts')
+  .select('*')
+  .eq('slug', slug)
+  .eq('published', true)
+  .eq('visibility', 'public')
+  .single();
+
 
       if (postError) {
         if (postError.code === 'PGRST116') {
@@ -184,7 +186,7 @@ const BlogPost = () => {
                 </Badge>
               )}
               <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-              <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p>
+              {/* <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p> */}
             </div>
 
             {/* Author and Meta Info */}
@@ -203,14 +205,15 @@ const BlogPost = () => {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      {formatDate(post.published_at)}
+                      {formatDate(post.created_at)}
+                      {/* {(post.created_at)} */}
                     </div>
-                    {post.read_time && (
+                    {/* {post.read_time && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         {post.read_time} min read
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
@@ -266,7 +269,8 @@ const BlogPost = () => {
 
           {/* Content */}
           <div className="prose prose-lg max-w-none mb-12">
-            {formatContent(post.content || '')}
+            {/* {formatContent(post.content || '')} */}
+            {<div dangerouslySetInnerHTML={{__html: post.content}} />}
           </div>
 
           {/* Author Bio */}

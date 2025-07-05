@@ -61,7 +61,7 @@ const Home = () => {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("author_id", user.id) // ✅ FIXED
+        .eq("author_id", user.id)
         .order("created_at", { ascending: false })
         .limit(3);
 
@@ -130,20 +130,22 @@ const Home = () => {
                               <CardTitle className="mb-2">
                                 {post.title}
                               </CardTitle>
-                              <CardDescription>
-                                {post.excerpt || "No excerpt available"}
-                              </CardDescription>
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant={
-                                  post.status === "published"
+                                  post.visibility === "private"
+                                    ? "secondary"
+                                    : post.status === "published"
                                     ? "default"
-                                    : "secondary"
+                                    : "outline"
                                 }
                               >
-                                {post.status}
+                                {post.visibility === "private"
+                                  ? "Private"
+                                  : post.status}
                               </Badge>
+
                               <Button asChild variant="ghost" size="sm">
                                 <Link to={`/editor/${post.id}`}>
                                   <Edit className="w-4 h-4" />
