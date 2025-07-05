@@ -1,11 +1,7 @@
-// src/stores/useAuthStore.ts
+// src/stores/useBlog.js
 import { create } from 'zustand'
-import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/supabase/supabase'
 
-interface BlogStore {
 
-}
-
-export const useAuth = create<BlogStore>((set) => ({
+export const useBlog = create((set) => ({
 }))

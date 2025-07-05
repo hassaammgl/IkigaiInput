@@ -113,11 +113,10 @@ const ImageUpload = ({
         <Card>
           <CardContent className="p-6">
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                dragOver
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragOver
                   ? "border-primary bg-primary/10"
                   : "border-muted-foreground/25"
-              }`}
+                }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

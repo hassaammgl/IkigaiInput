@@ -12,13 +12,14 @@ import { X, Plus } from 'lucide-react';
 
 const CategoryTagSelector = ({
   selectedCategory,
-  selectedTags,
+  selectedTags=[],
   onCategoryChange,
-  onTagsChange
+  onTagsChange,
 }) => {
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState('');
+
 
   useEffect(() => {
     loadCategoriesAndTags();
@@ -30,6 +31,8 @@ const CategoryTagSelector = ({
         supabase.from('categories').select('*').order('name'),
         supabase.from('tags').select('*').order('name')
       ]);
+
+
 
       if (categoriesResult.data) setCategories(
         categoriesResult.data.map(category => ({
@@ -45,56 +48,109 @@ const CategoryTagSelector = ({
           description: tag.description ?? ''
         }))
       );
+
     } catch (error) {
       console.error('Error loading categories and tags:', error);
     }
   };
 
+  // const addTag = (tagName) => {
+  //   if (tagName && !selectedTags.includes(tagName)) {
+  //     onTagsChange([...selectedTags, tagName]);
+  //   }
+  // };
+
   const addTag = (tagName) => {
-    if (tagName && !selectedTags.includes(tagName)) {
-      onTagsChange([...selectedTags, tagName]);
-    }
-  };
+  if (tagName && !safeSelectedTags.includes(tagName)) {
+    onTagsChange([...safeSelectedTags, tagName]);
+  }
+};
+
 
   const removeTag = (tagName) => {
     onTagsChange(selectedTags.filter(tag => tag !== tagName));
   };
 
+  // const createNewTag = async () => {
+  //   if (!newTag.trim()) return;
+
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('tags')
+  //       .insert([{ name: newTag.trim() }])
+  //       .select()
+  //       .single();
+
+  //     if (error) throw error;
+
+  //     const newTagObj = {
+  //       id: data.id,
+  //       name: data.name,
+  //       description: data.description ?? ''
+  //     };
+  //     setTags([...tags, newTagObj]);
+  //     addTag(newTagObj.name);
+  //     setNewTag('');
+  //   } catch (error) {
+  //     console.error('Error creating tag:', error);
+  //   }
+  // };
+
+  // Defensive: ensure categories, tags, and selectedTags are always arrays
+
   const createNewTag = async () => {
     if (!newTag.trim()) return;
 
+    const tagName = newTag.trim();
+    const slug = tagName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
     try {
       const { data, error } = await supabase
-        .from('tags')
-        .insert([{ name: newTag.trim() }])
+        .from("tags")
+        .upsert([{ name: tagName, slug }], {
+          onConflict: "slug",
+        })
         .select()
         .single();
 
-      if (error) throw error;
+
+      if (error) {
+        console.error("Supabase Insert Error:", error.message);
+        return;
+      }
 
       const newTagObj = {
         id: data.id,
         name: data.name,
-        description: data.description ?? ''
+        description: data.description ?? "",
       };
-      setTags([...tags, newTagObj]);
+
+      setTags((prev) => [...prev, newTagObj]);
       addTag(newTagObj.name);
-      setNewTag('');
-    } catch (error) {
-      console.error('Error creating tag:', error);
+      setNewTag("");
+    } catch (err) {
+      console.error("Error creating tag:", err.message);
     }
   };
+
+
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const safeTags = Array.isArray(tags) ? tags : [];
+  const safeSelectedTags = Array.isArray(selectedTags) ? selectedTags : [];
 
   return (
     <div className="space-y-4">
       <div>
         <Label htmlFor="category">Category</Label>
-        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+        <Select name="category" value={selectedCategory} onValueChange={onCategoryChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
-            {categories.map(category => (
+            {safeCategories.map(category => (
               <SelectItem key={category.id} value={category.name}>
                 {category.name}
               </SelectItem>
@@ -106,17 +162,17 @@ const CategoryTagSelector = ({
       <div>
         <Label>Tags</Label>
         <div className="flex flex-wrap gap-2 mb-2">
-          {selectedTags.map(tag => (
+          {safeSelectedTags.map(tag => (
             <Badge key={tag} variant="secondary" className="flex items-center gap-1">
               {tag}
-              <X 
-                className="w-3 h-3 cursor-pointer" 
+              <X
+                className="w-3 h-3 cursor-pointer"
                 onClick={() => removeTag(tag)}
               />
             </Badge>
           ))}
         </div>
-        
+
         <div className="flex gap-2 mb-2">
           <Input
             value={newTag}
@@ -130,12 +186,12 @@ const CategoryTagSelector = ({
         </div>
 
         <div className="flex flex-wrap gap-1">
-          {tags
-            .filter(tag => !selectedTags.includes(tag.name))
+          {safeTags
+            .filter(tag => !safeSelectedTags.includes(tag?.name))
             .map(tag => (
-              <Badge 
-                key={tag.id} 
-                variant="outline" 
+              <Badge
+                key={tag.id}
+                variant="outline"
                 className="cursor-pointer hover:bg-muted"
                 onClick={() => addTag(tag.name)}
               >

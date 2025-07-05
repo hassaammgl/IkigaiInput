@@ -2,30 +2,48 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import CategoryTagSelector from "@/components/shared/CategoryTagSelector";
 import ImageUpload from "@/components/shared/ImageUpload";
 import { ArrowLeft, Save, Send, Loader2 } from "lucide-react";
+import { NavLink } from "react-router";
+import { useAuth } from "@/store/auth";
 
-const dummyData = {
-  title: "How to Use Next.js with Supabase",
-  content: "This is a dummy post content. You can write your article here...",
-  excerpt: "A quick guide on integrating Next.js with Supabase.",
-  category: "Web Development",
-  tags: ["nextjs", "supabase", "guide"],
-  cover_image_url: "https://placehold.co/600x400",
-};
+
 
 const Editor = () => {
+
+  const { user } = useAuth()
+
   const [postData, setPostData] = useState({
-    ...dummyData,
+    title: "",
+    content: "",
+    cover_image_url: "",
+    author_id: user?.id,
+    slug: "",
+    published: false,
+    category_id: ""
   });
 
-  const handleChange = (field, value) => {
-    setPostData((prev) => ({ ...prev, [field]: value }));
-  };
+
+  /**
+   * 
+   * 
+   *  
+      title
+      content
+      cover_image_url
+      author_id
+      slug
+      published
+      created_at
+      updated_at
+      category_id
+   * 
+   * 
+   */
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,12 +51,14 @@ const Editor = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
+              <NavLink to={"/"}>
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Button>
+              </NavLink>
               <h1 className="text-xl font-semibold">
-                Dummy Editor
+                Hana Editor
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -68,30 +88,19 @@ const Editor = () => {
                     <Label htmlFor="title">Title *</Label>
                     <Input
                       id="title"
+                      name="title"
                       value={postData.title}
-                      onChange={(e) => handleChange('title', e.target.value)}
+                      onChange={(e)=> setPostData((prev)=> ({...prev,["title"]: e.target.value}))}
                       placeholder="Enter your post title..."
                       className="text-lg"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="excerpt">Excerpt</Label>
-                    <Textarea
-                      id="excerpt"
-                      value={postData.excerpt}
-                      onChange={(e) => handleChange('excerpt', e.target.value)}
-                      placeholder="Brief description of your post..."
-                      rows={3}
-                      disabled
                     />
                   </div>
                   <CategoryTagSelector
                     selectedCategory={postData.category}
                     selectedTags={postData.tags}
-                    onCategoryChange={() => {}}
-                    onTagsChange={() => {}}
-                    // disabled
+                    onCategoryChange={(e) => {}}
+                    onTagsChange={(e) => {console.log(e);
+                     }}
                   />
                 </CardContent>
               </Card>
@@ -102,10 +111,9 @@ const Editor = () => {
                 </CardHeader>
                 <CardContent>
                   <ImageUpload
-                    onImageUploaded={() => {}}
+                    onImageUploaded={() => { }}
                     currentImage={postData.cover_image_url}
                     bucket="post-images"
-                    // disabled
                   />
                 </CardContent>
               </Card>
@@ -117,9 +125,8 @@ const Editor = () => {
                 <CardContent>
                   <RichTextEditor
                     content={postData.content}
-                    onChange={() => {}}
+                    onChange={(e) => console.log(e)}
                     placeholder="Start writing your post..."
-                    // readOnly
                   />
                   <p className="text-sm text-muted-foreground mt-2">
                     Minimum 100 characters required
