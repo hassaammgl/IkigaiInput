@@ -11,11 +11,8 @@ import { ArrowLeft, Save, Send, Loader2 } from "lucide-react";
 import { NavLink } from "react-router";
 import { useAuth } from "@/store/auth";
 
-
-
 const Editor = () => {
-
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const [postData, setPostData] = useState({
     title: "",
@@ -24,9 +21,9 @@ const Editor = () => {
     author_id: user?.id,
     slug: "",
     published: false,
-    category_id: ""
+    category_id: "",
+    tags: [],
   });
-
 
   /**
    * 
@@ -57,9 +54,7 @@ const Editor = () => {
                   Back
                 </Button>
               </NavLink>
-              <h1 className="text-xl font-semibold">
-                Hana Editor
-              </h1>
+              <h1 className="text-xl font-semibold">Hana Editor</h1>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" disabled>
@@ -90,17 +85,30 @@ const Editor = () => {
                       id="title"
                       name="title"
                       value={postData.title}
-                      onChange={(e)=> setPostData((prev)=> ({...prev,["title"]: e.target.value}))}
+                      onChange={(e) => {
+                        const title = e.target.value;
+                        setPostData((prev) => ({
+                          ...prev,
+                          title,
+                          slug: title
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .replace(/(^-|-$)/g, ""),
+                        }));
+                      }}
                       placeholder="Enter your post title..."
                       className="text-lg"
                     />
                   </div>
                   <CategoryTagSelector
-                    selectedCategory={postData.category}
-                    selectedTags={postData.tags}
-                    onCategoryChange={(e) => {}}
-                    onTagsChange={(e) => {console.log(e);
-                     }}
+                    selectedCategory={postData.category_id}
+                    selectedTags={postData.tags || []}
+                    onCategoryChange={(value) =>
+                      setPostData((prev) => ({ ...prev, category_id: value }))
+                    }
+                    onTagsChange={(updatedTags) =>
+                      setPostData((prev) => ({ ...prev, tags: updatedTags }))
+                    }
                   />
                 </CardContent>
               </Card>
@@ -111,9 +119,11 @@ const Editor = () => {
                 </CardHeader>
                 <CardContent>
                   <ImageUpload
-                    onImageUploaded={() => { }}
+                    onImageUploaded={(url) =>
+                      setPostData((prev) => ({ ...prev, cover_image_url: url }))
+                    }
                     currentImage={postData.cover_image_url}
-                    bucket="post-images"
+                    bucket="blog-images"
                   />
                 </CardContent>
               </Card>
@@ -125,7 +135,9 @@ const Editor = () => {
                 <CardContent>
                   <RichTextEditor
                     content={postData.content}
-                    onChange={(e) => console.log(e)}
+                    onChange={(e) =>
+                      setPostData((prev) => ({ ...prev, content: e }))
+                    }
                     placeholder="Start writing your post..."
                   />
                   <p className="text-sm text-muted-foreground mt-2">
@@ -133,6 +145,7 @@ const Editor = () => {
                   </p>
                 </CardContent>
               </Card>
+              <button onClick={()=> console.log(postData)}>Check</button>
             </div>
           </div>
         </div>
