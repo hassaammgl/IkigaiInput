@@ -13,6 +13,14 @@ import { supabase } from "@/supabase/supabase";
 import slugify from "slugify";
 import { useParams, useNavigate } from "react-router";
 import { useToast } from "@/hooks/useToast";
+import { linkPostTags } from "@/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Editor = () => {
   const { id } = useParams();
@@ -41,7 +49,11 @@ const Editor = () => {
     published: false,
     category_id: "",
     tags: [],
+    visibility: "public",
   });
+
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [isLoadingPublish, setIsLoadingPublish] = useState(false);
 
   const generateSlug = (title) => {
     return slugify(title, {
@@ -71,56 +83,77 @@ const Editor = () => {
 
   const handleDraft = async (e) => {
     e.preventDefault();
-    console.log(postData);
-    setPostData((prev) => ({ ...prev, slug: generateSlug(postData.title) }));
+    setIsLoadingDraft(true);
+
+    const slug = generateSlug(postData.title);
     try {
-      const { data, error } = await supabase
-      .from("posts")
-      .insert([
-        {
-          title: postData.title,
-          content: postData.content,
-          cover_image_url: postData.cover_image_url,
-          author_id: user?.id,
-          slug: postData.slug,
-          published: false,
-          category_id: postData.category_id,
-          tags: postData.tags,
-        },
-      ])
-      .select()
-      .single();
+      // 1. insert post
+      const { data: post, error: postError } = await supabase
+        .from("posts")
+        .insert([
+          {
+            title: postData.title,
+            content: postData.content,
+            cover_image_url: postData.cover_image_url,
+            author_id: user?.id,
+            slug,
+            published: false,
+            category_id: postData.category_id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (postError) throw postError;
+
+      // 2. link tags
+      await linkPostTags(post.id, postData.tags);
+
+      success("✅ Post published!");
+      navigate("/");
     } catch (error) {
-      console.log(error);
-      err("Error While uploading");
+      console.error("❌ Upload failed:", error);
+      err("Something went wrong while publishing.");
+    } finally {
+      setIsLoadingDraft(false);
     }
   };
   const handlePublish = async (e) => {
     e.preventDefault();
-    console.log(postData);
-    setPostData((prev) => ({ ...prev, slug: generateSlug(postData.title) }));
+    setIsLoadingPublish(true);
+
+    const slug = generateSlug(postData.title);
     try {
-      const { data, error } = await supabase
-      .from("posts")
-      .insert([
-        {
-          title: postData.title,
-          content: postData.content,
-          cover_image_url: postData.cover_image_url,
-          author_id: user?.id,
-          slug: postData.slug,
-          published: true,
-          category_id: postData.category_id,
-          tags: postData.tags,
-        },
-      ])
-      .select()
-      .single();
+      // 1. insert post
+      const { data: post, error: postError } = await supabase
+        .from("posts")
+        .insert([
+          {
+            title: postData.title,
+            content: postData.content,
+            cover_image_url: postData.cover_image_url,
+            author_id: user?.id,
+            slug,
+            published: true,
+            category_id: postData.category_id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (postError) throw postError;
+
+      // 2. link tags
+      await linkPostTags(post.id, postData.tags);
+
+      success("✅ Post published!");
+      navigate("/");
     } catch (error) {
-      console.log(error);
-      err("Error While uploading");
+      console.error("❌ Upload failed:", error);
+      err("Something went wrong while publishing.");
+    } finally {
+      setIsLoadingPublish(false);
     }
-    
   };
 
   return (
@@ -139,11 +172,19 @@ const Editor = () => {
             </div>
             <div className="flex items-center gap-2">
               <Button onClick={handleDraft} variant="outline">
-                <Save className="w-4 h-4 mr-2" />
+                {isLoadingDraft ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
                 Save Draft
               </Button>
               <Button onClick={handlePublish}>
-                <Send className="w-4 h-4 mr-2" />
+                {isLoadingPublish ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
                 Publish
               </Button>
             </div>
@@ -191,6 +232,49 @@ const Editor = () => {
                       setPostData((prev) => ({ ...prev, tags: updatedTags }))
                     }
                   />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Visibility</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="visibility">Post Visibility</Label>
+                    <select
+                      id="visibility"
+                      className="w-full border rounded p-2"
+                      value={postData.visibility}
+                      onChange={(e) =>
+                        setPostData((prev) => ({
+                          ...prev,
+                          visibility: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="public">Public</option>
+                      <option value="private">Private</option>
+                    </select>
+
+                    {/* <Select id="visibility"
+                      className="w-full border rounded p-2"
+                      value={postData.visibility}
+                      onChange={(e) =>
+                        setPostData((prev) => ({
+                          ...prev,
+                          visibility: e.target.value,
+                        }))
+                      }>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Theme" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="light">Light</SelectItem>
+    <SelectItem value="dark">Dark</SelectItem>
+    <SelectItem value="system">System</SelectItem>
+  </SelectContent>
+</Select> */}
+                  </div>
                 </CardContent>
               </Card>
 

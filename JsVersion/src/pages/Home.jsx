@@ -15,7 +15,6 @@ import Navbar from "@/layout/Navbar";
 // import TrendingPosts from "@/components/TrendingPosts";
 import { PenTool, Calendar, Edit, Eye, MessageSquare } from "lucide-react";
 
-
 const Home = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -34,11 +33,13 @@ const Home = () => {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("status", "published")
+        .eq("published", true) // ✅ FIXED
+        .eq("visibility", "public")
         .order("published_at", { ascending: false })
         .limit(6);
 
       if (error) throw error;
+
       setPosts(
         (data || []).map((post) => ({
           ...post,
@@ -60,7 +61,7 @@ const Home = () => {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("author_id", user.id) // ✅ FIXED
         .order("created_at", { ascending: false })
         .limit(3);
 
