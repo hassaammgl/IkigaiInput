@@ -67,13 +67,13 @@ const RichTextEditor = ({
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('post-images')
+        .from('blog-images')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('post-images')
+        .from('blog-images')
         .getPublicUrl(fileName);
 
       return data.publicUrl;
