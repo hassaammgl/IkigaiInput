@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/store/auth";
 import { supabase } from "@/supabase/supabase";
 import Navbar from "@/layout/Navbar";
-// import TrendingPosts from "@/components/TrendingPosts";
+import TrendingPosts from "@/components/shared/TrendingPosts";
 import { PenTool, Calendar, Edit, Eye, MessageSquare } from "lucide-react";
 
 const Home = () => {
@@ -35,7 +35,7 @@ const Home = () => {
         .select("*")
         .eq("published", true) // ✅ FIXED
         .eq("visibility", "public")
-        .order("published_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(6);
 
       if (error) throw error;
@@ -207,7 +207,10 @@ const Home = () => {
                 ) : (
                   <div className="grid gap-6">
                     {posts.map((post) => (
-                      <Card key={post.id}>
+                      <Card key={post.id} className={""}>
+                        <div className=" size-32 rounded-3xl border overflow-hidden">
+                          <img src={post.cover_image_url} alt="cover_img" />
+                        </div>
                         <CardHeader>
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -278,7 +281,7 @@ const Home = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* <TrendingPosts timeRange="week" limit={5} /> */}
+              <TrendingPosts timeRange="week" limit={5} />
             </div>
           </div>
         </div>

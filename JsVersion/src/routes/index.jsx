@@ -5,6 +5,7 @@ import NotFound from "@/pages/NotFound";
 import BlogPost from "@/pages/BlogPost";
 import Dashboard from "@/pages/Dashboard";
 import AuthorProfile from "@/pages/AuthorProfile";
+import Personal from "@/pages/Personal";
 
 const routes = [
 	{
@@ -26,7 +27,7 @@ const routes = [
 	{
 		path: "/personal",
 		element: (
-				<Home />
+				<Personal />
 		),
 	},
 	{
