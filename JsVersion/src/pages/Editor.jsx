@@ -241,39 +241,23 @@ const Editor = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <Label htmlFor="visibility">Post Visibility</Label>
-                    <select
-                      id="visibility"
-                      className="w-full border rounded p-2"
+                    <Select
                       value={postData.visibility}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setPostData((prev) => ({
                           ...prev,
-                          visibility: e.target.value,
+                          visibility: value,
                         }))
                       }
                     >
-                      <option value="public">Public</option>
-                      <option value="private">Private</option>
-                    </select>
-
-                    {/* <Select id="visibility"
-                      className="w-full border rounded p-2"
-                      value={postData.visibility}
-                      onChange={(e) =>
-                        setPostData((prev) => ({
-                          ...prev,
-                          visibility: e.target.value,
-                        }))
-                      }>
-  <SelectTrigger className="w-[180px]">
-    <SelectValue placeholder="Theme" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="light">Light</SelectItem>
-    <SelectItem value="dark">Dark</SelectItem>
-    <SelectItem value="system">System</SelectItem>
-  </SelectContent>
-</Select> */}
+                      <SelectTrigger className="w-full" id="visibility">
+                        <SelectValue placeholder="Select visibility" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="public">Public</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>

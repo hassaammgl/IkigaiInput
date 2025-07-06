@@ -4,6 +4,7 @@ import Editor from "@/pages/Editor";
 import NotFound from "@/pages/NotFound";
 import BlogPost from "@/pages/BlogPost";
 import Dashboard from "@/pages/Dashboard";
+import AuthorProfile from "@/pages/AuthorProfile";
 
 const routes = [
 	{
@@ -12,6 +13,18 @@ const routes = [
 	},
 	{
 		path: "/",
+		element: (
+				<Home />
+		),
+	},
+	{
+		path: "/profile/:id",
+		element: (
+				<AuthorProfile />
+		),
+	},
+	{
+		path: "/personal",
 		element: (
 				<Home />
 		),

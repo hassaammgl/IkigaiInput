@@ -61,7 +61,7 @@ const Home = () => {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("author_id", user.id)
+        .eq("author_id", user?.id)
         .order("created_at", { ascending: false })
         .limit(3);
 
