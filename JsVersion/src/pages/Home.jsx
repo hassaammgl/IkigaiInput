@@ -134,16 +134,16 @@ const Home = () => {
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant={
-                                  post.visibility === "private"
+                                  post.visibility === "public"
                                     ? "secondary"
-                                    : post.status === "published"
+                                    : post.visibility === "private"
                                     ? "default"
                                     : "outline"
                                 }
                               >
                                 {post.visibility === "private"
                                   ? "Private"
-                                  : post.status}
+                                  : "Public"}
                               </Badge>
 
                               <Button asChild variant="ghost" size="sm">
@@ -207,72 +207,7 @@ const Home = () => {
                 ) : (
                   <div className="grid gap-6">
                     {posts.map((post) => (
-                      <Card key={post.id} className={""}>
-                        <div className=" size-32 rounded-3xl border overflow-hidden">
-                          <img src={post.cover_image_url} alt="cover_img" />
-                        </div>
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <CardTitle>{post.title}</CardTitle>
-                              <CardDescription>
-                                {post.excerpt || "No excerpt available"}
-                              </CardDescription>
-                              {post.author_name && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  by {post.author_name}
-                                </p>
-                              )}
-                            </div>
-                            {post.category && (
-                              <Badge variant="outline">{post.category}</Badge>
-                            )}
-                          </div>
-                          {post.tags && post.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {post.tags.slice(0, 4).map((tag) => (
-                                <Badge
-                                  key={tag}
-                                  variant="secondary"
-                                  className="text-xs"
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {post.tags.length > 4 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{post.tags.length - 4}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {formatDate(
-                                  post.published_at || post.created_at
-                                )}
-                              </div>
-                              {post.read_time && (
-                                <span>{post.read_time} min read</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1">
-                                <Eye className="w-4 h-4" />
-                                {post.likes_count}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="w-4 h-4" />
-                                {post.comments_count}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <CARD key={post.id} post={post} />
                     ))}
                   </div>
                 )}
@@ -287,6 +222,71 @@ const Home = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const CARD = ({ post }) => {
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+  return (
+    <Card>
+      <CardHeader className={'flex'}>
+      <div className=" size-32 rounded-3xl border overflow-hidden">
+        <img src={post?.cover_image_url} alt="cover_img" />
+      </div>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle>{post?.title}</CardTitle>
+            {post?.author_name && (
+              <p className="text-sm text-muted-foreground mt-1">
+                by {post?.author_name}
+              </p>
+            )}
+          </div>
+          {post?.category && <Badge variant="outline">{post?.category}</Badge>}
+        </div>
+        {post?.tags && post?.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {post.tags.slice(0, 4).map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {post?.tags.length > 4 && (
+              <Badge variant="secondary" className="text-xs">
+                +{post?.tags.length - 4}
+              </Badge>
+            )}
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              {formatDate(post?.created_at)}
+            </div>
+            {/* {post.read_time && <span>{post.read_time} min read</span>} */}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Eye className="w-4 h-4" />
+              {post?.likes_count}
+            </div>
+            <div className="flex items-center gap-1">
+              <MessageSquare className="w-4 h-4" />
+              {post?.comments_count}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -22,3 +22,20 @@ export async function linkPostTags(postId, tagNames = []) {
 
   if (insertError) throw insertError;
 }
+
+export async function getTags(tagsId = []) {
+  if (!tagsId?.length) return [];
+
+  const { data, error } = await supabase
+    .from("tags")
+    .select("*")
+    .in("id", tagsId); 
+console.log(data);
+
+  if (error) {
+    console.error("Error fetching tags:", error);
+    return [];
+  }
+
+  return data.map(t=> t.name);
+}

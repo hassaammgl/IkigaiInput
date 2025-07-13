@@ -56,7 +56,6 @@
 //   const [isLoadingPublish, setIsLoadingPublish] = useState(false);
 //   const [isEditing, setIsEditing] = useState(false);
 
-
 //   const generateSlug = (title) => {
 //     return slugify(title, {
 //       lower: true,
@@ -94,7 +93,6 @@
 //     navigate("/");
 //   }
 // };
-
 
 //   const handleDraft = async (e) => {
 //     e.preventDefault();
@@ -316,8 +314,6 @@
 
 // export default Editor;
 
-
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -340,6 +336,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getTags } from "@/utils";
 
 const Editor = () => {
   const { id } = useParams();
@@ -391,6 +388,8 @@ const Editor = () => {
         .select("tag_id")
         .eq("post_id", id);
 
+      const tagsData = await getTags(tagLinks?.map((t) => t.tag_id))
+
       setPostData({
         title: post.title,
         content: post.content,
@@ -399,7 +398,7 @@ const Editor = () => {
         slug: post.slug,
         published: post.published,
         category_id: post.category_id,
-        tags: tagLinks?.map((t) => t.tag_id) || [],
+        tags: tagsData,
         visibility: post.visibility || "public",
       });
 
@@ -634,5 +633,3 @@ const Editor = () => {
 };
 
 export default Editor;
-
-
