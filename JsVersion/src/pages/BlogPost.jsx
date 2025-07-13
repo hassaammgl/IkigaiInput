@@ -1,18 +1,18 @@
-
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import { useAuth } from '@/store/auth';
-import { supabase } from '@/supabase/supabase';
-import Navbar from '@/layout/Navbar';
-import PostLikeButton from '@/components/shared/PostLikeButton';
-import ShareButtons from '@/components/shared/ShareButtons';
-import CommentsSection from '@/components/shared/CommentsSection';
-import RelatedPosts from '@/components/shared/RelatedPosts';
-import { Card, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Clock, Eye, MessageSquare } from 'lucide-react';
-
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
+import { useAuth } from "@/store/auth";
+import { supabase } from "@/supabase/supabase";
+import Navbar from "@/layout/Navbar";
+import PostLikeButton from "@/components/shared/PostLikeButton";
+import ShareButtons from "@/components/shared/ShareButtons";
+import CommentsSection from "@/components/shared/CommentsSection";
+import RelatedPosts from "@/components/shared/RelatedPosts";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Calendar, Clock, Eye, MessageSquare } from "lucide-react";
+import { getPostBySlug, getCategory,getAuthorProfile, getUsername } from "@/utils";
+import MetaData from "@/components/shared/MetaData";
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -22,127 +22,56 @@ const BlogPost = () => {
   const [author, setAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [viewsCount, setViewsCount] = useState(0);
+  const [postCategory, setPostCategory] = useState("");
 
   useEffect(() => {
     if (slug) {
       loadPost();
     }
-  }, [slug]);
-
-  useEffect(() => {
-    if (post) {
-      recordView();
-      loadViewsCount();
-    }
-  }, [post]);
+  }, []);
 
   const loadPost = async () => {
     try {
-      const { data: postData, error: postError } = await supabase
-  .from('posts')
-  .select('*')
-  .eq('slug', slug)
-  .eq('published', true)
-  .eq('visibility', 'public')
-  .single();
+      const [postData] = await Promise.all([getPostBySlug(slug)]);
 
-
-      if (postError) {
-        if (postError.code === 'PGRST116') {
-          navigate('/404');
-          return;
-        }
-        throw postError;
+      if (postData) {
+        const category = await getCategory(postData.category_id);
+        setPostCategory(category);
+      }
+      if (postData) {
+        const author = await getUsername(postData.author_id);
+        console.log(author);
+        
+        setAuthor(author);
       }
 
       setPost({
-        ...postData,
-        title: postData.title ?? '',
-        content: postData.content ?? '',
-        excerpt: postData.excerpt ?? '',
-        author_name: postData.author_name ?? '',
-        category: postData.category ?? '',
-        tags: postData.tags ?? [],
-        published_at: postData.published_at ?? '',
-        read_time: postData.read_time ?? 0,
-        likes_count: postData.likes_count ?? 0,
-        comments_count: postData.comments_count ?? 0,
-        cover_image_url: postData.cover_image_url ?? '',
-        user_id: postData.user_id ?? '',
-        id: postData.id ?? '',
+        id: postData.id,
+        title: postData.title,
+        content: postData.content,
+        cover_image_url: postData.cover_image_url,
+        author_id: postData.author_id,
+        slug: postData.slug,
+        published: postData.published,
+        created_at: postData.created_at,
+        updated_at: postData.updated_at,
+        category_id: postData.category_id,
+        visibility: postData.visibility,
       });
-
-      // Load author profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, display_name, avatar_url, bio')
-        .eq('id', postData.user_id)
-        .single();
-
-      if (!profileError) {
-        setAuthor({
-          id: profileData.id,
-          display_name: profileData.display_name ?? '',
-          avatar_url: profileData.avatar_url ?? '',
-          bio: profileData.bio ?? '',
-        });
-      }
     } catch (error) {
-      console.error('Error loading post:', error);
-      navigate('/404');
+      console.error("Error loading post:", error);
+      navigate("/404");
     } finally {
       setLoading(false);
     }
   };
 
-  const recordView = async () => {
-    if (!post) return;
-
-    try {
-      await supabase
-        .from('post_views')
-        .insert({
-          post_id: post.id,
-          user_id: user?.id || null,
-          ip_address: null, // You could implement IP tracking if needed
-          user_agent: navigator.userAgent,
-        });
-    } catch (error) {
-      console.error('Error recording view:', error);
-    }
-  };
-
-  const loadViewsCount = async () => {
-    if (!post) return;
-
-    try {
-      const { count, error } = await supabase
-        .from('post_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('post_id', post.id);
-
-      if (!error) {
-        setViewsCount(count || 0);
-      }
-    } catch (error) {
-      console.error('Error loading views count:', error);
-    }
-  };
-
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
-  };
-
-  const formatContent = (content) => {
-    return content.split('\n').map((paragraph, index) => (
-      <p key={index} className="mb-4 leading-relaxed">
-        {paragraph}
-      </p>
-    ));
   };
 
   if (loading) {
@@ -174,28 +103,27 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <article className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <header className="mb-8">
             <div className="mb-4">
-              {post.category && (
+              {post?.category_id && (
                 <Badge variant="secondary" className="mb-4">
-                  {post.category}
+                  {postCategory}
                 </Badge>
               )}
               <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-              {/* <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p> */}
             </div>
-
             {/* Author and Meta Info */}
+            <MetaData title={post.title}   />
             <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div className="flex items-center gap-4">
                 <Avatar className="w-12 h-12">
-                  <AvatarImage src={author?.avatar_url || ''} />
+                  <AvatarImage src={author?.avatar_url || ""} />
                   <AvatarFallback>
-                    {author?.display_name?.[0] || post.author_name?.[0] || 'A'}
+                    {author.substring(0,2).toUpperCase() || "A"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -233,7 +161,7 @@ const BlogPost = () => {
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {post.tags.map(tag => (
+                {post.tags.map((tag) => (
                   <Badge key={tag} variant="outline" className="text-xs">
                     #{tag}
                   </Badge>
@@ -255,12 +183,16 @@ const BlogPost = () => {
 
           {/* Like and Share Buttons */}
           <div className="flex items-center gap-4 mb-8 pb-6 border-b">
-            <PostLikeButton 
-              postId={post.id} 
+            <PostLikeButton
+              postId={post.id}
               initialLikesCount={post.likes_count}
-              onLikeChange={(newCount) => setPost(prev => prev ? {...prev, likes_count: newCount} : null)}
+              onLikeChange={(newCount) =>
+                setPost((prev) =>
+                  prev ? { ...prev, likes_count: newCount } : null
+                )
+              }
             />
-            <ShareButtons 
+            <ShareButtons
               title={post.title}
               excerpt={post.excerpt}
               url={window.location.href}
@@ -270,7 +202,7 @@ const BlogPost = () => {
           {/* Content */}
           <div className="prose prose-lg max-w-none mb-12">
             {/* {formatContent(post.content || '')} */}
-            {<div dangerouslySetInnerHTML={{__html: post.content}} />}
+            {<div dangerouslySetInnerHTML={{ __html: post.content }} />}
           </div>
 
           {/* Author Bio */}
@@ -279,13 +211,15 @@ const BlogPost = () => {
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16">
-                    <AvatarImage src={author.avatar_url || ''} />
+                    <AvatarImage src={author.avatar_url || ""} />
                     <AvatarFallback>
-                      {author.display_name?.[0] || 'A'}
+                      {author.display_name?.[0] || "A"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-lg font-semibold">About {author.display_name}</h3>
+                    <h3 className="text-lg font-semibold">
+                      About {author.display_name}
+                    </h3>
                     <p className="text-muted-foreground">{author.bio}</p>
                   </div>
                 </div>
@@ -299,11 +233,11 @@ const BlogPost = () => {
           </div>
 
           {/* Related Posts */}
-          <RelatedPosts 
+          {/* <RelatedPosts
             currentPostId={post.id}
             category={post.category}
             tags={post.tags}
-          />
+          /> */}
         </div>
       </article>
     </div>

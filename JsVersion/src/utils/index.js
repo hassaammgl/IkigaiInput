@@ -65,7 +65,7 @@ export async function getUsername(id) {
     .from("profiles")
     .select("username")
     .eq("id", id)
-    .single(); 
+    .single();
 
   if (error) {
     console.error("Error fetching username:", error);
@@ -74,3 +74,166 @@ export async function getUsername(id) {
 
   return data.username;
 }
+
+export async function getLikes(postId) {
+  if (!postId) return 0;
+
+  const { count, error } = await supabase
+    .from("likes")
+    .select("*", { count: "exact", head: true }) // we just want the count
+    .eq("post_id", postId);
+
+  if (error) {
+    console.error("Error fetching likes:", error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+export async function getViews(postId) {
+  if (!postId) return 0;
+
+  const { count, error } = await supabase
+    .from("views")
+    .select("*", { count: "exact", head: true }) // count only, no data
+    .eq("post_id", postId);
+
+  if (error) {
+    console.error("Error fetching views:", error);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+
+export async function updateViews(postId, viewerId) {
+  if (!postId) return;
+
+  try {
+    const { data: existingView, error: checkError } = await supabase
+      .from("views")
+      .select("id")
+      .eq("post_id", postId)
+      .eq("viewer_id", viewerId)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (existingView) return;
+
+    const { error: insertError } = await supabase.from("views").insert([
+      {
+        post_id: postId,
+        viewer_id: viewerId ?? null,
+        user_agent: navigator.userAgent,
+      },
+    ]);
+
+    if (insertError) throw insertError;
+  } catch (error) {
+    console.error("Error updating views:", error);
+  }
+}
+
+export async function getPostBySlug(slug) {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("published", true)
+    .eq("visibility", "public")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getAuthorProfile(userId) {
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url, bio")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching author profile:", error);
+    return null;
+  }
+
+  return data;
+}
+
+
+export async function updateLikes(postId, userId) {
+  if (!postId || !userId) return;
+
+  try {
+    const { data: existingLike, error: checkError } = await supabase
+      .from("likes")
+      .select("id")
+      .eq("post_id", postId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    if (existingLike) {
+      const { error: deleteError } = await supabase
+        .from("likes")
+        .delete()
+        .eq("id", existingLike.id);
+
+      if (deleteError) throw deleteError;
+
+      return { liked: false };
+    } else {
+      const { error: insertError } = await supabase
+        .from("likes")
+        .insert([{ post_id: postId, user_id: userId }]);
+
+      if (insertError) throw insertError;
+
+      return { liked: true };
+    }
+  } catch (error) {
+    console.error("Error updating like:", error.message);
+    return null;
+  }
+}
+
+
+// export async function getPostBySlug(slug) {
+//   try {
+//       const { data: postData, error: postError } = await supabase
+//         .from("posts")
+//         .select("*")
+//         .eq("slug", slug)
+//         .eq("published", true)
+//         .eq("visibility", "public")
+//         .single();
+
+//       if (postError) {
+//         if (postError.code === "PGRST116") {
+//           return;
+//         }
+//         throw postError;
+//       }
+
+//       // Load author profile
+//     // await getAuthorProfile()
+
+//     //   if (!profileError) {
+       
+//     //   }
+
+//     return postData;
+//     } catch (error) {
+//       console.error("Error loading post:", error);
+//     }
+// }

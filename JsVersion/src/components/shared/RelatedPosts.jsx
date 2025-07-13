@@ -15,9 +15,9 @@ const RelatedPosts= ({
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadRelatedPosts();
-  }, [currentPostId, category, tags]);
+  // useEffect(() => {
+  //   loadRelatedPosts();
+  // }, [currentPostId, category, tags]);
 
   const loadRelatedPosts = async () => {
     setLoading(true);

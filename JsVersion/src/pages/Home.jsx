@@ -21,7 +21,7 @@ import {
   MessageSquare,
   Clock10Icon,
 } from "lucide-react";
-import { getCategory, getTags, getUsername } from "@/utils";
+import { getCategory, getTags, getUsername, getLikes, getViews } from "@/utils";
 
 const Home = () => {
   const { user } = useAuth();
@@ -236,6 +236,8 @@ const CARD = ({ post }) => {
   const [postCategoryName, setPostCategoryName] = useState("");
   const [postTags, setPostTags] = useState([]);
   const [authorUsername, setAuthorUsername] = useState("");
+  const [likesCount, setLikesCount] = useState(0);
+  const [viewsCount, setViewsCount] = useState(0);
 
   const { user } = useAuth();
 
@@ -256,11 +258,14 @@ const CARD = ({ post }) => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const [{ data: tagLinks }, categoryName, username] = await Promise.all([
-          supabase.from("post_tags").select("tag_id").eq("post_id", post.id),
-          getCategory(post.category_id),
-          getUsername(post.author_id),
-        ]);
+        const [{ data: tagLinks }, categoryName, username, likes, views] =
+          await Promise.all([
+            supabase.from("post_tags").select("tag_id").eq("post_id", post.id),
+            getCategory(post.category_id),
+            getUsername(post.author_id),
+            getLikes(post.id),
+            getViews(post.id),
+          ]);
 
         if (tagLinks) {
           const tags = await getTags(tagLinks.map((t) => t.tag_id));
@@ -268,6 +273,8 @@ const CARD = ({ post }) => {
         }
         setPostCategoryName(categoryName);
         setAuthorUsername(username);
+        setLikesCount(likes);
+        setViewsCount(views);
       } catch (err) {
         console.error("Error loading post tags/category:", err);
       }
