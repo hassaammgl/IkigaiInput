@@ -29,7 +29,6 @@ const AuthorProfile = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Load profile data
   useEffect(() => {
     if (user?.id) {
       fetchProfile();

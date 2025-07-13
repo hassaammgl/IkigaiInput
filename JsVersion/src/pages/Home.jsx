@@ -13,7 +13,15 @@ import { useAuth } from "@/store/auth";
 import { supabase } from "@/supabase/supabase";
 import Navbar from "@/layout/Navbar";
 import TrendingPosts from "@/components/shared/TrendingPosts";
-import { PenTool, Calendar, Edit, Eye, MessageSquare } from "lucide-react";
+import {
+  PenTool,
+  Calendar,
+  Edit,
+  Eye,
+  MessageSquare,
+  Clock10Icon,
+} from "lucide-react";
+import { getCategory, getTags, getUsername } from "@/utils";
 
 const Home = () => {
   const { user } = useAuth();
@@ -224,55 +232,110 @@ const Home = () => {
     </div>
   );
 };
-
 const CARD = ({ post }) => {
+  const [postCategoryName, setPostCategoryName] = useState("");
+  const [postTags, setPostTags] = useState([]);
+  const [authorUsername, setAuthorUsername] = useState("");
+
+  const { user } = useAuth();
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
+
+  const calculateReadTime = (content) => {
+    const wordsPerMinute = 200;
+    const wordCount = content.split(/\s+/).length;
+    return Math.ceil(wordCount / wordsPerMinute);
+  };
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const [{ data: tagLinks }, categoryName, username] = await Promise.all([
+          supabase.from("post_tags").select("tag_id").eq("post_id", post.id),
+          getCategory(post.category_id),
+          getUsername(post.author_id),
+        ]);
+
+        if (tagLinks) {
+          const tags = await getTags(tagLinks.map((t) => t.tag_id));
+          setPostTags(tags);
+        }
+        setPostCategoryName(categoryName);
+        setAuthorUsername(username);
+      } catch (err) {
+        console.error("Error loading post tags/category:", err);
+      }
+    };
+
+    getData();
+  }, []);
+
+  console.log(user);
+
   return (
-    <Card>
-      <CardHeader className={'flex'}>
-      <div className=" size-32 rounded-3xl border overflow-hidden">
-        <img src={post?.cover_image_url} alt="cover_img" />
-      </div>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle>{post?.title}</CardTitle>
-            {post?.author_name && (
-              <p className="text-sm text-muted-foreground mt-1">
-                by {post?.author_name}
-              </p>
-            )}
-          </div>
-          {post?.category && <Badge variant="outline">{post?.category}</Badge>}
+    <Card className="flex flex-col md:flex-row overflow-hidden shadow-sm border rounded-2xl">
+      {/* Cover Image */}
+      {post?.cover_image_url && (
+        <div className="w-full ml-4 md:w-48 h-40 md:h-auto shrink-0 overflow-hidden">
+          <img
+            src={post.cover_image_url}
+            alt={post.title}
+            className="object-cover size-40"
+          />
         </div>
-        {post?.tags && post?.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {post.tags.slice(0, 4).map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {post?.tags.length > 4 && (
-              <Badge variant="secondary" className="text-xs">
-                +{post?.tags.length - 4}
+      )}
+
+      {/* Content */}
+      <div className="flex flex-col justify-between p-4 flex-1">
+        <div>
+          <CardTitle className="text-xl mb-1">{post.title}</CardTitle>
+          {post.author_id && (
+            <p className="text-muted-foreground text-sm mb-2">
+              by {"@" + authorUsername}
+            </p>
+          )}
+
+          {/* Tags and Category */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {post?.category_id && (
+              <Badge variant="outline" className="text-xs">
+                {postCategoryName}
               </Badge>
             )}
+            {postTags.length >= 3
+              ? [...postTags]?.slice(0, 3).map((tag) => (
+                  <Badge key={tag} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))
+              : [...postTags].map((tag) => (
+                  <Badge key={tag} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+            <span className="text-sm">
+              {postTags.length > 3 ? `+ ${postTags.length - 3}` : ""}
+            </span>
           </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
+        </div>
+
+        {/* Meta Info */}
+        <div className="flex justify-between items-center text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              {formatDate(post?.created_at)}
+              {formatDate(post.created_at)}
             </div>
-            {/* {post.read_time && <span>{post.read_time} min read</span>} */}
+            <div className="flex items-center gap-2">
+              <Clock10Icon className="w-4 h-4" />
+              {calculateReadTime(post.content)}
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
@@ -285,7 +348,7 @@ const CARD = ({ post }) => {
             </div>
           </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };

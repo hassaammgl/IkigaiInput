@@ -29,13 +29,48 @@ export async function getTags(tagsId = []) {
   const { data, error } = await supabase
     .from("tags")
     .select("*")
-    .in("id", tagsId); 
-console.log(data);
+    .in("id", tagsId);
+  console.log(data);
 
   if (error) {
     console.error("Error fetching tags:", error);
     return [];
   }
 
-  return data.map(t=> t.name);
+  return data.map(t => t.name);
+}
+
+
+export async function getCategory(catId) {
+  if (!catId) return null;
+
+  const { data, error } = await supabase
+    .from("categories")
+    .select("name")
+    .eq("id", catId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching category:", error);
+    return null;
+  }
+
+  return data?.name || null;
+}
+
+export async function getUsername(id) {
+  if (!id) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", id)
+    .single(); 
+
+  if (error) {
+    console.error("Error fetching username:", error);
+    return null;
+  }
+
+  return data.username;
 }
