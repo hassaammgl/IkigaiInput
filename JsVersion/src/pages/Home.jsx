@@ -281,25 +281,31 @@ const CARD = ({ post }) => {
   return (
     <Card className="flex flex-col md:flex-row overflow-hidden shadow-sm border rounded-2xl">
       {/* Cover Image */}
-      {post?.cover_image_url && (
-        <div className="w-full ml-4 md:w-48 h-40 md:h-auto shrink-0 overflow-hidden">
-          <img
-            src={post.cover_image_url}
-            alt={post.title}
-            className="object-cover size-40"
-          />
-        </div>
-      )}
+      <Link to={`/post/${post.slug}`}>
+        {post?.cover_image_url && (
+          <div className="w-full ml-4 md:w-48 h-40 md:h-auto shrink-0 overflow-hidden">
+            <img
+              src={post.cover_image_url}
+              alt={post.title}
+              className="object-cover size-40"
+            />
+          </div>
+        )}
+      </Link>
 
       {/* Content */}
       <div className="flex flex-col justify-between p-4 flex-1">
         <div>
-          <CardTitle className="text-xl mb-1">{post.title}</CardTitle>
-          {post.author_id && (
-            <p className="text-muted-foreground text-sm mb-2">
-              by {"@" + authorUsername}
-            </p>
-          )}
+          <Link to={`/post/${post.slug}`}>
+            <CardTitle className="text-xl mb-1">{post.title}</CardTitle>
+          </Link>
+          <CardDescription>
+            {post.author_id && (
+              <p className="text-muted-foreground text-sm mb-2">
+                by {"@" + authorUsername}
+              </p>
+            )}
+          </CardDescription>
 
           {/* Tags and Category */}
           <div className="flex flex-wrap gap-2 mb-3">
@@ -320,7 +326,7 @@ const CARD = ({ post }) => {
                   </Badge>
                 ))}
             <span className="text-sm">
-              {postTags.length > 3 ? `+ ${postTags.length - 3}` : ""}
+              {postTags.length > 3 ? `+ ${postTags.length - 3}` : null}
             </span>
           </div>
         </div>
