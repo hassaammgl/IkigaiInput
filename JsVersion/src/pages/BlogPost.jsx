@@ -11,12 +11,12 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, Eye, MessageSquare } from "lucide-react";
-import { getPostBySlug, getCategory,getAuthorProfile, getUsername } from "@/utils";
+import { getPostBySlug, getCategory, getUsername, updateViews } from "@/utils";
 import MetaData from "@/components/shared/MetaData";
 
 const BlogPost = () => {
   const { slug } = useParams();
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [author, setAuthor] = useState(null);
@@ -30,6 +30,10 @@ const BlogPost = () => {
     }
   }, []);
 
+  // useEffect(async () => {
+  //   await updateViews();
+  // }, []);
+
   const loadPost = async () => {
     try {
       const [postData] = await Promise.all([getPostBySlug(slug)]);
@@ -41,7 +45,6 @@ const BlogPost = () => {
       if (postData) {
         const author = await getUsername(postData.author_id);
         console.log(author);
-        
         setAuthor(author);
       }
 
@@ -74,6 +77,12 @@ const BlogPost = () => {
     });
   };
 
+  const calculateReadTime = (content) => {
+    const wordsPerMinute = 200;
+    const wordCount = content.split(/\s+/).length;
+    return Math.ceil(wordCount / wordsPerMinute);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -103,7 +112,6 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-
       <article className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -117,13 +125,13 @@ const BlogPost = () => {
               <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
             </div>
             {/* Author and Meta Info */}
-            <MetaData title={post.title}   />
+            <MetaData title={post.title} />
             <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div className="flex items-center gap-4">
                 <Avatar className="w-12 h-12">
                   <AvatarImage src={author?.avatar_url || ""} />
                   <AvatarFallback>
-                    {author.substring(0,2).toUpperCase() || "A"}
+                    {author.substring(0, 2).toUpperCase() || "A"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -134,14 +142,13 @@ const BlogPost = () => {
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {formatDate(post.created_at)}
-                      {/* {(post.created_at)} */}
                     </div>
-                    {/* {post.read_time && (
+                    {post.content && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
-                        {post.read_time} min read
+                        {calculateReadTime(post.content)} min read
                       </div>
-                    )} */}
+                    )}
                   </div>
                 </div>
               </div>
@@ -159,7 +166,7 @@ const BlogPost = () => {
             </div>
 
             {/* Tags */}
-            {post.tags && post.tags.length > 0 && (
+            {/* {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {post.tags.map((tag) => (
                   <Badge key={tag} variant="outline" className="text-xs">
@@ -167,7 +174,8 @@ const BlogPost = () => {
                   </Badge>
                 ))}
               </div>
-            )}
+            )} */}
+            
 
             {/* Cover Image */}
             {post.cover_image_url && (
