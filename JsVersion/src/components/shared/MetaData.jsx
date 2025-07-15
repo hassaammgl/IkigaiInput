@@ -1,19 +1,14 @@
 import React from "react";
 
-const MetaData = ({ title }) => {
+const MetaData = ({ title, author, tagsNames = [], content }) => {
+  const keywords = tagsNames.join(", ");
   return (
     <>
       <head>
         <title>{title}</title>
-        <meta name="author" content="John Smith" />
-        <meta
-          name="keywords"
-          content="React, JavaScript, semantic markup, html"
-        />
-        <meta
-          name="description"
-          content="API reference for the <meta> component in React DOM"
-        />
+        <meta name="author" content={author} />
+        <meta name="keywords" content={keywords} />
+        <meta name="description" content={content} />
       </head>
     </>
   );

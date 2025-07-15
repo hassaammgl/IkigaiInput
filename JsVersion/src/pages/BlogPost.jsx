@@ -11,7 +11,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, Eye, MessageSquare } from "lucide-react";
-import { getPostBySlug, getCategory, getUsername, updateViews } from "@/utils";
+import { getPostBySlug, getCategory, getUsername, updateViews, getTags } from "@/utils";
 import MetaData from "@/components/shared/MetaData";
 
 const BlogPost = () => {
@@ -46,6 +46,9 @@ const BlogPost = () => {
         const author = await getUsername(postData.author_id);
         console.log(author);
         setAuthor(author);
+      }
+      if (postData) {
+        const tags =await getTags()
       }
 
       setPost({
@@ -125,7 +128,11 @@ const BlogPost = () => {
               <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
             </div>
             {/* Author and Meta Info */}
-            <MetaData title={post.title} />
+            <MetaData
+              title={post.title}
+              author={author}
+              content={post.content}
+            />
             <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div className="flex items-center gap-4">
                 <Avatar className="w-12 h-12">
@@ -175,7 +182,6 @@ const BlogPost = () => {
                 ))}
               </div>
             )} */}
-            
 
             {/* Cover Image */}
             {post.cover_image_url && (
@@ -209,8 +215,7 @@ const BlogPost = () => {
 
           {/* Content */}
           <div className="prose prose-lg max-w-none mb-12">
-            {/* {formatContent(post.content || '')} */}
-            {<div dangerouslySetInnerHTML={{ __html: post.content }} />}
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
           </div>
 
           {/* Author Bio */}

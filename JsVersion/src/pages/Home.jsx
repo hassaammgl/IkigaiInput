@@ -286,7 +286,7 @@ const CARD = ({ post }) => {
   console.log(user);
 
   return (
-    <Card className="flex flex-col md:flex-row overflow-hidden shadow-sm border rounded-2xl">
+    <Card className="group transition-all ease-in-out duration-500 flex flex-col md:flex-row overflow-hidden shadow-sm border rounded-2xl">
       {/* Cover Image */}
       <Link to={`/post/${post.slug}`}>
         {post?.cover_image_url && (
@@ -304,7 +304,7 @@ const CARD = ({ post }) => {
       <div className="flex flex-col justify-between p-4 flex-1">
         <div>
           <Link to={`/post/${post.slug}`}>
-            <CardTitle className="text-xl mb-1">{post.title}</CardTitle>
+            <CardTitle className="text-xl mb-1 group-hover:underline transition-all ease-in-out duration-500">{post.title}</CardTitle>
           </Link>
           <CardDescription>
             {post.author_id && (

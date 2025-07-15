@@ -208,32 +208,20 @@ export async function updateLikes(postId, userId) {
 }
 
 
-// export async function getPostBySlug(slug) {
-//   try {
-//       const { data: postData, error: postError } = await supabase
-//         .from("posts")
-//         .select("*")
-//         .eq("slug", slug)
-//         .eq("published", true)
-//         .eq("visibility", "public")
-//         .single();
+export async function getTagsByPostId(post_id) {
+  if (!post_id) return null;
 
-//       if (postError) {
-//         if (postError.code === "PGRST116") {
-//           return;
-//         }
-//         throw postError;
-//       }
+  const { data, error } = await supabase
+    .from("post_tags")
+    .select("*")
+    .in("post_id", post_id);
+  console.log(data);
 
-//       // Load author profile
-//     // await getAuthorProfile()
+  if (error) {
+    console.error("Error fetching tags:", error);
+    return [];
+  }
 
-//     //   if (!profileError) {
-       
-//     //   }
+  return  await data.map(t => t.name);
 
-//     return postData;
-//     } catch (error) {
-//       console.error("Error loading post:", error);
-//     }
-// }
+}
