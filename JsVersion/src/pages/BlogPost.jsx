@@ -38,9 +38,18 @@ const BlogPost = () => {
     }
   }, []);
 
-  // useEffect(async () => {
-  //   await updateViews();
-  // }, []);
+ useEffect(() => {
+  const run = async () => {
+    try {
+      await updateViews();
+    } catch (err) {
+      console.error("Failed to update views:", err);
+    }
+  };
+
+  run();
+}, []);
+
 
   const loadPost = async () => {
     try {
