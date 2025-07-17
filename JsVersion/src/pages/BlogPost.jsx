@@ -11,7 +11,14 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, Eye, MessageSquare } from "lucide-react";
-import { getPostBySlug, getCategory, getUsername, updateViews, getTags } from "@/utils";
+import {
+  getPostBySlug,
+  getCategory,
+  getUsername,
+  updateViews,
+  getTags,
+  getTagsByPostId,
+} from "@/utils";
 import MetaData from "@/components/shared/MetaData";
 
 const BlogPost = () => {
@@ -23,6 +30,7 @@ const BlogPost = () => {
   const [loading, setLoading] = useState(true);
   const [viewsCount, setViewsCount] = useState(0);
   const [postCategory, setPostCategory] = useState("");
+  const [postTags, setPostTags] = useState([])
 
   useEffect(() => {
     if (slug) {
@@ -48,7 +56,9 @@ const BlogPost = () => {
         setAuthor(author);
       }
       if (postData) {
-        const tags =await getTags()
+        const tags = await getTagsByPostId(postData.id);
+        console.log(tags);
+        setPostTags(tags)
       }
 
       setPost({
@@ -173,15 +183,15 @@ const BlogPost = () => {
             </div>
 
             {/* Tags */}
-            {/* {post.tags && post.tags.length > 0 && (
+            {postTags && postTags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {post.tags.map((tag) => (
+                {postTags.map((tag) => (
                   <Badge key={tag} variant="outline" className="text-xs">
                     #{tag}
                   </Badge>
                 ))}
               </div>
-            )} */}
+            )}
 
             {/* Cover Image */}
             {post.cover_image_url && (

@@ -52,7 +52,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-xl font-bold">
-            HanaWrites.
+           <img src="/assets/logo.png" className="size-12 -rotate-12 object-contain" alt="logo" />
           </Link>
 
           <div className="flex items-center gap-4">

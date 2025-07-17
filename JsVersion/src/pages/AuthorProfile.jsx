@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
+import Navbar from "@/layout/Navbar";
 
 const AuthorProfile = () => {
   const { user } = useAuth();
@@ -82,7 +83,7 @@ const AuthorProfile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* <Navbar /> */}
+      <Navbar />
       <div className="container mx-auto px-4 py-10 max-w-xl">
         <Card>
           <CardHeader>

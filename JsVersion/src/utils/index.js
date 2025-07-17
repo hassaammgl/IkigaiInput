@@ -209,19 +209,18 @@ export async function updateLikes(postId, userId) {
 
 
 export async function getTagsByPostId(post_id) {
-  if (!post_id) return null;
+  if (!post_id) return [];
 
   const { data, error } = await supabase
     .from("post_tags")
-    .select("*")
-    .in("post_id", post_id);
-  console.log(data);
+    .select("tag_id, tags(name)") // Join with tags table to get tag names
+    .eq("post_id", post_id);
 
   if (error) {
-    console.error("Error fetching tags:", error);
+    console.error("Error fetching tags for post:", error);
     return [];
   }
 
-  return await data.map(t => t.name);
-
+  // Extract tag names from the joined data
+  return data.map((item) => item.tags?.name).filter(Boolean);
 }
