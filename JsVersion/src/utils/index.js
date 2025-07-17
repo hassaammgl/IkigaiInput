@@ -222,6 +222,6 @@ export async function getTagsByPostId(post_id) {
     return [];
   }
 
-  return  await data.map(t => t.name);
+  return await data.map(t => t.name);
 
 }
