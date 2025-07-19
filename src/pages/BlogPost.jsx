@@ -30,7 +30,7 @@ const BlogPost = () => {
   const [loading, setLoading] = useState(true);
   const [viewsCount, setViewsCount] = useState(0);
   const [postCategory, setPostCategory] = useState("");
-  const [postTags, setPostTags] = useState([])
+  const [postTags, setPostTags] = useState([]);
 
   useEffect(() => {
     if (slug) {
@@ -38,18 +38,17 @@ const BlogPost = () => {
     }
   }, []);
 
- useEffect(() => {
-  const run = async () => {
-    try {
-      await updateViews();
-    } catch (err) {
-      console.error("Failed to update views:", err);
-    }
-  };
+  useEffect(() => {
+    const run = async () => {
+      try {
+        await updateViews();
+      } catch (err) {
+        console.error("Failed to update views:", err);
+      }
+    };
 
-  run();
-}, []);
-
+    run();
+  }, []);
 
   const loadPost = async () => {
     try {
@@ -67,7 +66,7 @@ const BlogPost = () => {
       if (postData) {
         const tags = await getTagsByPostId(postData.id);
         console.log(tags);
-        setPostTags(tags)
+        setPostTags(tags);
       }
 
       setPost({
