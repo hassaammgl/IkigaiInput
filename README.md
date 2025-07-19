@@ -139,14 +139,13 @@ alter table categories enable row level security;
 create policy "Public can read categories"
   on categories for select using (true);
 
+
 insert into categories (name, slug) values
 ('Web Development', 'web-dev'),
 ('Design', 'design'),
 ('AI & ML', 'ai-ml'),
 ('Lifestyle', 'lifestyle'),
-('Career', 'career');
-
-insert into categories (name, slug) values
+('Career', 'career'),
 ('Web Development', 'web-development'),
 ('Frontend', 'frontend'),
 ('Backend', 'backend'),
@@ -484,4 +483,4 @@ create index on categories (slug);
 create index on posts (created_at desc);
 create index on comments (created_at desc);
 create index on views (viewed_at desc);
--->
+ -->
